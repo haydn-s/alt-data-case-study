@@ -1,0 +1,400 @@
+
+==============================================================================
+1. TSA DAILY CHECKPOINT SERIES -- VALIDATION AND CLEANING
+==============================================================================
+rows read                : 2,830
+date range               : 2019-01-01 .. 2026-09-30
+calendar days expected   : 2,830
+missing calendar days    : 0
+duplicate dates          : 0
+null passenger counts    : 0
+zero / negative counts   : 0
+dtype                    : int64
+
+lapse 1 2025-10-01 .. 2025-11-12: 43 days flagged
+lapse 2 2026-02-14 .. 2026-04-30: 76 days flagged
+
+robust-z scan on log(52-week ratio), MAD calibrated on 2023-07-01 onward:
+  pre-2023 days with |z| > 5 : 784 (the COVID collapse and its base effect)
+  2023-07-01-onward days with |z| > 4 : 24 of 1188
+             screened  ratio_52w  robust_z lapse
+date                                            
+2023-09-28  2616213.0      1.308     4.216  none
+2023-12-22  2775193.0      1.324     4.430  none
+2023-12-23  2606577.0      1.421     5.664  none
+2023-12-30  2563962.0      1.325     4.443  none
+2024-11-19  1885832.0      0.712    -6.375  none
+2024-11-20  2070826.0      0.755    -5.353  none
+2024-11-21  2550762.0      1.648     8.255  none
+2024-11-27  2726845.0      1.399     5.400  none
+2024-11-28  1551896.0      0.682    -7.143  none
+2024-11-30  2811101.0      1.507     6.694  none
+2024-12-01  3088836.0      1.330     4.516  none
+2024-12-22  2800962.0      1.420     5.656  none
+2024-12-23  2758299.0      1.360     4.900  none
+2024-12-24  2068817.0      0.776    -4.876  none
+2024-12-25  2039342.0      0.766    -5.116  none
+2024-12-29  2805401.0      1.325     4.451  none
+2025-07-03  2923234.0      1.315     4.319  none
+2025-12-23  2822653.0      1.364     4.957  none
+2025-12-25  2066118.0      0.753    -5.406  none
+2025-12-30  2827572.0      1.301     4.132  none
+2026-01-25  1313323.0      0.570   -10.248  none
+2026-07-04  1882467.0      0.766    -5.109  none
+2026-09-01  1847635.0      0.812    -4.097  none
+2026-09-06  2149009.0      0.804    -4.270  none
+  -> the few flagged days are single-day holiday-drift artefacts (fixed-date vs
+     floating holidays land on different weekdays across a 364-day lag), not
+     collection failures: each is bracketed by normal days.
+  -> NO days are imputed, winsorised or dropped. The quarterly target is a sum
+     over 92 days, so a handful of 1-day holiday shifts cannot move it materially,
+     and editing them would inject judgement where the raw file has no defect.
+
+DID THE LAPSES ACTUALLY DEPRESS THROUGHPUT IN THIS FILE?
+  (a) event study, window vs the 49 days either side (7-day donut):
+  (a) lapse1 2025 shutdown   inside  +1.97%  control  +0.89%  diff  +1.08pp  t +1.11
+  (a) lapse2 2026 DHS lapse  inside  +0.63%  control  +0.38%  diff  +0.25pp  t +0.25
+  (b) log(52-week ratio) ~ const + trend + lapse1 + lapse2, 2024-07 onward:
+      const            +3.31%   se  0.50pp   t  +6.66
+      trend_per_yr     -2.54%   se  0.40pp   t  -6.36
+      lapse1           +1.99%   se  1.12pp   t  +1.78
+      lapse2           +1.71%   se  0.90pp   t  +1.91
+      (Without the trend term lapse2 reads -2.65% at t=-3.0. That is the
+       trend, not the lapse: YoY throughput growth was fading at ~2.5pp/yr
+       and lapse 2 sits late in the sample. Adding the trend flips the sign.)
+  CONCLUSION: neither window shows a throughput DROP in this file. Both
+  point estimates are slightly POSITIVE once trend is controlled. The flags
+  are kept and exported, but nothing is repaired -- see README 'Challenges'.
+
+packet cites Upgraded Points: Mar-May 2026 avg daily throughput -6.7% YoY, May -9.8%.
+  this file: Mar-May 2026 2,517,120/day vs 2025 2,508,685/day  = +0.34%
+  this file: May 2026      2,541,268/day vs 2025 2,560,100/day  = -0.74%
+  -> ~7pp and ~9pp disagreement. See README 'Challenges' for how this is handled.
+
+==============================================================================
+2. AGGREGATION TO MONTHS AND QUARTERS
+==============================================================================
+Day counts differ across like quarters (Q1 2024 had 91 days, Q1 2025 had 90),
+so every trend/diagnostic use is on a per-day basis. Q3 is 92 days in both
+2025 and 2026, so the Q3 comparison is unaffected either way.
+
+quarterly TSA, 2024Q1 onward:
+            tsa_sum  days  lapse_days  tsa_per_day  tsa_sum_yoy  tsa_per_day_yoy
+q                                                                               
+2024Q1  206516508.0    91           0  2269412.176        8.018            6.831
+2024Q2  236721886.0    91           0  2601339.407        6.663            6.663
+2024Q3  235227661.0    92           0  2556822.402        4.348            4.348
+2024Q4  225602522.0    92           0  2452201.326        2.547            2.547
+2025Q1  205597207.0    90           0  2284413.411       -0.445            0.661
+2025Q2  235325857.0    91           0  2585998.429       -0.590           -0.590
+2025Q3  237515574.0    92           0  2581691.022        0.973            0.973
+2025Q4  228297338.0    92          43  2481492.804        1.194            1.194
+2026Q1  208660296.0    90          46  2318447.733        1.490            1.490
+2026Q2  233763292.0    91          30  2568827.385       -0.664           -0.664
+2026Q3  230749661.0    92           0  2508148.489       -2.849           -2.849
+
+Q3 2026 is COMPLETE in this file: 92 of 92 days, 0 lapse-flagged days.
+Q3 2026 TSA total 230,749,661 vs Q3 2025 237,515,574 = -2.85% YoY
+Both Q3 2026 and its Q3 2025 base lie entirely OUTSIDE both lapse windows.
+
+day-of-week multipliers (ratio to centred 7-day mean, 2023-07 onward):
+  Mo=1.047  Tu=0.878  We=0.927  Th=1.065  Fr=1.081  Sa=0.915  Su=1.087
+
+calendar effect on monthly YoY, Q3 2026 and its base:
+         tsa_sum_yoy  cal_effect_pct  tsa_yoy_cal_adj
+m                                                    
+2026-06        -1.25           -0.69            -0.56
+2026-07        -2.06            0.66            -2.72
+2026-08        -4.41           -0.11            -4.30
+2026-09        -2.05           -0.40            -1.64
+  -> August 2026's headline -4.40% YoY is about -0.11pp calendar, so -4.30% on a like-for-like week.
+  IMPORTANT: no calendar adjustment is applied to the forecast chain. The chain
+  multiplies this year's actual TSA month by LAST year's Southwest share, and a
+  share is a ratio over the same days, so the calendar cancels by construction.
+  The adjustment matters only for reading the TSA series as a demand statement.
+
+==============================================================================
+3. SOUTHWEST REPORTED PANEL AND THE TWO LINKING RATIOS
+==============================================================================
+A checkpoint count is a count of BOARDINGS. Southwest's target figure is
+revenue passengers = one-way O&D trips. The bridge is the trip factor:
+      trip_factor = enplaned passengers / revenue passengers
+and it is the thing that broke in 2026.
+
+        revenue_passengers_000  enplaned_passengers_000  trip_factor  trip_factor_yoy  revpax_yoy  enplaned_yoy       haul  dist_per_boarding       lf  asm_millions
+q                                                                                                                                                                   
+2024Q1                   32872                    40897       1.2441          -0.1453      8.7361        8.5780  1006.5405           809.0324  78.3161         42248
+2024Q2                   37509                    47267       1.2602           0.4896      5.0231        5.5373  1018.9821           808.6191  82.6400         46250
+2024Q3                   35516                    44711       1.2589          -0.2180      0.4724        0.2534  1034.3226           821.6099  81.2380         45219
+2024Q4                   34126                    42591       1.2481           0.3186     -5.1608       -4.8586  1010.1096           809.3494  79.1836         43533
+2025Q1                   29990                    37139       1.2384          -0.4621     -8.7673       -9.1889  1021.3071           824.7126  73.9260         41432
+2025Q2                   35507                    44385       1.2500          -0.8027     -5.3374       -6.0973  1038.8092           831.0240  78.4854         46996
+2025Q3                   34581                    43806       1.2668           0.6250     -2.6326       -2.0241  1051.5023           830.0689  79.7990         45567
+2025Q4                   34033                    43004       1.2636           1.2456     -0.2725        0.9697  1045.0739           827.0626  77.2323         46052
+2026Q1                   29175                    37277       1.2777           3.1754     -2.7176        0.3716  1067.7292           835.6627  74.0826         42049
+2026Q2                   34331                    44518       1.2967           3.7354     -3.3120        0.2997  1087.8215           838.8966  79.3027         47093
+
+Q2 2026: enplaned +0.30% YoY but revenue passengers -3.31% YoY.
+The entire wedge is the trip factor, +3.74% YoY. Assigned seating and the
+fare bundles (Jan 27 2026) moved travellers onto more connecting itineraries,
+so each paying trip now consumes more boardings -- and more checkpoint scans.
+dist_per_boarding is ~stable (830-840 mi), confirming the move is itinerary
+structure, not a change in the kind of flying.
+
+==============================================================================
+4. T-100 LINKAGE: SOUTHWEST'S SHARE OF NATIONAL THROUGHPUT
+==============================================================================
+T-100 coverage: 2019-01 .. 2026-07  (91 months). Q3 2026 months present: ['2026-07']
+
+monthly Southwest share of TSA throughput and its YoY change:
+         segment_passengers     tsa_sum   share  share_yoy  seg_yoy  tsa_yoy
+m                                                                           
+2024-07            16506050  84120120.0  0.1962    -1.7289   3.5302   5.3516
+2024-08            14304705  79508438.0  0.1799    -6.6175  -1.4848   5.4964
+2024-09            13375369  71599103.0  0.1868    -7.9286  -6.1119   1.9732
+2024-10            14391500  76332040.0  0.1885    -9.4187  -8.6975   0.7962
+2024-11            13378588  71885548.0  0.1861    -8.2732  -8.0459   0.2478
+2024-12            14268750  77384934.0  0.1844    -8.8636  -2.8063   6.6464
+2025-01            11086076  65777233.0  0.1685   -12.5243 -10.9953   1.7479
+2025-02            10978365  62590333.0  0.1754    -8.9517 -11.6573  -2.9716
+2025-03            14346275  77229641.0  0.1858    -7.7084  -7.8663  -0.1711
+2025-04            13733495  74206261.0  0.1851    -6.8152  -6.6053   0.2252
+2025-05            14722756  79363092.0  0.1855    -4.8405  -6.2512  -1.4824
+2025-06            15163989  81756504.0  0.1855    -5.3450  -5.7698  -0.4488
+2025-07            15447368  85093035.0  0.1815    -7.4839  -6.4139   1.1566
+2025-08            14238053  80331071.0  0.1772    -1.4852  -0.4659   1.0346
+2025-09            13577993  72091468.0  0.1883     0.8216   1.5149   0.6877
+2025-10            15328929  79099091.0  0.1938     2.7877   6.5138   3.6250
+2025-11            13152576  71776970.0  0.1832    -1.5406  -1.6894  -0.1510
+2025-12            14055517  77421277.0  0.1815    -1.5406  -1.4944   0.0470
+2026-01            10972373  65860911.0  0.1666    -1.1514  -1.0256   0.1272
+2026-02            11313450  64256259.0  0.1761     0.3805   3.0522   2.6616
+2026-03            14449080  78543126.0  0.1840    -0.9677   0.7166   1.7008
+2026-04            13601058  74252627.0  0.1832    -1.0262  -0.9643   0.0625
+2026-05            14839930  78779311.0  0.1884     1.5428   0.7959  -0.7356
+2026-06            15359888  80731354.0  0.1903     2.5781   1.2919  -1.2539
+2026-07            15377014  83340163.0  0.1845     1.6383  -0.4554  -2.0599
+
+REGIME CHANGE IN THE SHARE. It fell 5-12% YoY through Aug 2025 (Southwest
+shrinking against a growing industry) and has run POSITIVE since Sep 2025.
+Jul 2026: Southwest boardings -0.46% YoY while national throughput -2.06% YoY.
+Using the long-run average share drift would badly under-forecast Q3 2026.
+
+quarterly uplift, reported enplanements / T-100 domestic segment passengers:
+        enplaned_passengers_000       seg  uplift
+q                                                
+2023Q1                    37666  37616094  1.0013
+2023Q2                    44787  44840036  0.9988
+2023Q3                    44598  44709601  0.9975
+2023Q4                    44766  44992376  0.9950
+2024Q1                    40897  40453787  1.0110
+2024Q2                    47267  46501753  1.0165
+2024Q3                    44711  44186124  1.0119
+2024Q4                    42591  42038838  1.0131
+2025Q1                    37139  36410716  1.0200
+2025Q2                    44385  43620240  1.0175
+2025Q3                    43806  43263414  1.0125
+2025Q4                    43004  42537022  1.0110
+2026Q1                    37277  36734903  1.0148
+2026Q2                    44518  43800876  1.0164
+
+Q3-only uplift history: {'2019Q3': 0.9965, '2020Q3': 0.9782, '2021Q3': 0.9866, '2022Q3': 0.9904, '2023Q3': 0.9975, '2024Q3': 1.0119, '2025Q3': 1.0125}
+
+==============================================================================
+5. COMPONENT ESTIMATES FOR Q3 2026
+==============================================================================
+Identity used throughout (all four terms are separately estimable):
+    revenue_passengers = TSA_throughput x share x uplift / trip_factor
+In logs this decomposes the YoY move into four additive pieces, which is
+what lets the regime flag attach to one term instead of the whole forecast.
+
+  share YoY, post-flip 2025-09..2026-07     mean  +0.32%  sd  1.65  n=11
+  share YoY, last 6m 2026-02..07            mean  +0.69%  sd  1.48  n=6
+  share YoY, last 3m 2026-05..07            mean  +1.92%  sd  0.57  n=3
+  share YoY, post-flip ex-lapse months      mean  +0.65%  sd  1.65  n=6
+
+  CHOSEN share YoY growth for Aug+Sep 2026: +0.69%  (sd 1.05pp)
+  Rationale: the last 6 months is the shortest window that spans the current
+  regime without being dominated by a single month. The ex-lapse variant
+  (+0.65%) is close, so the lapse flag does not drive this.
+
+  uplift YoY ratios, last 4 quarters: {'2025Q3': 1.00065, '2025Q4': 0.99787, '2026Q1': 0.99486, '2026Q2': 0.99886}
+  CHOSEN uplift = Q3'25 uplift 1.0125 x 0.99806 = 1.0106 (sd 0.0025)
+  (A flat average of the last three Q3s would give 1.0073, but 2023Q3 predates the 2024 level shift.)
+
+  trip factor history: Q3 2025 1.2668, Q2 2026 1.2967
+  trip factor YoY:     {Period('2025Q3', 'Q-DEC'): 0.62, Period('2025Q4', 'Q-DEC'): 1.25, Period('2026Q1', 'Q-DEC'): 3.18, Period('2026Q2', 'Q-DEC'): 3.74}
+  E1 YoY-carry      : 1.2668 x (1+0.0374) = 1.3141
+  E2 Q2->Q3 seasonal: 1.2967 x 1.00678 = 1.3055   (seasonal ratios [1.00863, 1.00609, 0.99901, 1.01338], sd 0.00600)
+  CHOSEN trip factor Q3 2026: 1.3098 (sd 0.0078), +3.40% YoY
+  E1 and E2 are averaged because they lean on different assumptions (that the
+  2026 step persists vs that the within-year seasonal shape persists) and
+  neither dominates on 4 post-break observations. The spread between them IS
+  the honest uncertainty, so it sets the sd.
+
+  load factor: Q3 2025 79.8%, recent YoY steps [0.16, 0.82]pp -> Q3 2026 80.29%
+  avg haul   : Q3 2025 1051.5 mi, Q2->Q3 seasonal 1.0090 -> Q3 2026 1097.6 mi
+  ASMs       : Q3 2025 45,567M, guided -1% to +0% -> 45,111M to 45,567M
+
+==============================================================================
+6. FORECASTS
+==============================================================================
+M1  TSA -> share -> boardings -> revenue passengers
+    2026-07  T-100 actual  boardings 15,377,014
+    2026-08  TSA nowcast   boardings 13,704,891
+    2026-09  TSA nowcast   boardings 13,392,210
+    Q3 2026 domestic boardings (T-100 basis) : 42,474,115
+    x uplift 1.0106 -> enplaned passengers: 42,923k
+    / trip factor 1.3098 -> REVENUE PASSENGERS: 32,771k
+    (1.0 of 3 months are hard filings, 2 are TSA nowcasts)
+
+M2  capacity identity  revpax = ASM x LF / haul
+    45,339M ASM x 80.29% / 1097.6 mi = 33,165k
+
+M3  naive OLS  revpax_yoy ~ a + b*tsa_yoy   (2022Q1-2026Q2, n=18)
+    a=-4.16  b=+1.061  R2=0.98  resid sd=2.91pp
+    -> -7.18% YoY -> 32,097k   (carried only as a cautionary benchmark:
+       it forces one slope across the share regime break and the 2026 trip-factor
+       break, so it mixes three different mechanisms into one coefficient.)
+
+BASELINES   B0 same quarter last year  : 34,581k
+            B1 B0 scaled by Q2'26 YoY   : 34,581 x (1-0.0331) = 33,436k
+
+==============================================================================
+7. BACKTEST OF M1 AGAINST THE BASELINES
+==============================================================================
+Information set replicated at each quarter Q (what an analyst really had):
+  - TSA daily through the end of Q (published next day)
+  - T-100 through month 1 of Q only (BTS runs ~3 months late)
+  - Southwest's own reported figures through Q-1
+Share growth, uplift and trip factor are re-estimated from that vintage only.
+
+          actual        M1       B0        B1  M1_err_pct  B0_err_pct  B1_err_pct
+quarter                                                                          
+2022Q1   26029.0  29124.58  14225.0  33576.98       11.89      -45.35       29.00
+2022Q2   33224.0  36537.29  26158.0  47864.08        9.97      -21.27       44.06
+2022Q3   34434.0  33947.64  29303.0  37218.55       -1.41      -14.90        8.09
+2022Q4   32899.0  33632.63  29425.0  34577.36        2.23      -10.56        5.10
+2023Q1   30231.0  30958.52  26029.0  29102.06        2.41      -13.90       -3.73
+2023Q2   35715.0  35357.52  33224.0  38587.53       -1.00       -6.97        8.04
+2023Q3   35349.0  36641.75  34434.0  37015.72        3.66       -2.59        4.72
+2023Q4   35983.0  34244.33  32899.0  33773.21       -4.83       -8.57       -6.14
+2024Q1   32872.0  32053.74  30231.0  33064.90       -2.49       -8.03        0.59
+2024Q2   37509.0  37803.24  35715.0  38835.09        0.78       -4.78        3.54
+2024Q3   35516.0  36514.58  35349.0  37124.62        2.81       -0.47        4.53
+2024Q4   34126.0  34878.75  35983.0  36153.00        2.21        5.44        5.94
+2025Q1   29990.0  29777.16  32872.0  31175.55       -0.71        9.61        3.95
+2025Q2   35507.0  35015.20  37509.0  34220.46       -1.39        5.64       -3.62
+2025Q3   34581.0  33894.28  35516.0  33620.37       -1.99        2.70       -2.78
+2025Q4   34033.0  34429.01  34126.0  33227.59        1.16        0.27       -2.37
+2026Q1   29175.0  29808.01  29990.0  29908.27        2.17        2.79        2.51
+2026Q2   34331.0  33792.68  35507.0  34542.07       -1.57        3.43        0.61
+
+errors by era (%):
+                           era  n  M1_MAPE  B0_MAPE  B1_MAPE  M1_bias  M1_sd
+    2022-2024 (pre fee change) 12     3.81    11.90    10.29     2.19   4.80
+2025-2026 (fee + model change)  6     1.50     4.07     2.64    -0.39   1.67
+                   full sample 18     3.04     9.29     7.74     1.33   4.16
+
+M1 error in the current regime: bias -0.39%, sd 1.67%
+The interval below uses the CURRENT-REGIME sd, not the full-sample sd: the
+2022-2024 errors come from a different structure and would understate risk.
+
+==============================================================================
+7b. SENSITIVITY TO THE TWO JUDGEMENT CALLS
+==============================================================================
+M1 revenue passengers (000s) across share-growth and trip-factor assumptions:
+
+                   E2 seasonal only  blend [CHOSEN]  E1 YoY-carry only  no 2026 step (Q3'25 level)
+post-flip 11m                 32801           32694              32587                       33805
+last 6m  [CHOSEN]             32878           32771              32664                       33884
+last 3m                       33134           33026              32918                       34148
+ex-lapse months               32870           32762              32655                       33875
+zero drift                    32735           32627              32521                       33736
+
+The trip factor swings the answer by ~1,000k across plausible values; share
+growth by ~450k. If the trip factor had NOT stepped up, the forecast would sit
+at ~33.8m, above baseline B1. That single unobservable ratio is the whole call.
+
+coherence: avg distance per boarding = haul / trip factor
+  Q3 2025 actual               830.1 mi
+  M2's haul 1097.6 / M1's trip factor 1.3098 = 838.0 mi (+0.95% YoY)
+  T-100 Jul 2026 rpm/segment   834.1 mi vs Jul 2025 832.8 mi
+  The two methods imply a consistent structural story (slightly longer flying
+  per boarding), so M2 is not quietly contradicting M1's trip factor.
+
+==============================================================================
+8. POINT FORECAST AND 80% INTERVAL
+==============================================================================
+M1 TSA chain          point   32,772k   80% [32,025, 33,522]
+M2 capacity identity  point   33,171k   80% [32,326, 34,020]
+M3 naive OLS          point   32,097k   (benchmark only, not in the blend)
+
+method error: Student-t, df=5, sd=1.67% (current-regime backtest)
+M1/M2 structural-error correlation imposed at rho=0.7
+
+BLEND 65% M1 / 35% M2
+  >>> POINT FORECAST       32,912 thousand revenue passengers
+  >>> 80% INTERVAL         [32,237 , 33,589] thousand
+      implied YoY          -4.83%   (Q3 2025 = 34,581k)
+      interval as +/-      2.05% of the point
+      vs baseline B0       -1,669k
+      vs baseline B1       -524k
+
+If the independence assumption were kept, the interval would be [32,338, 33,490] -- narrower, and wrong.
+
+M1 is weighted 65% because its two nowcast months rest on measured TSA data,
+while M2 inherits the full width of the ASM guidance range and needs a haul
+forecast that is itself mid-structural-break. M2 is kept at 35% because it is
+the only estimate anchored on something the company has actually committed to.
+
+Bias note: M1's current-regime backtest bias is -0.39%. Correcting
+for it would move the point to 33,039k. NOT applied: a bias estimated on
+6 quarters is indistinguishable from noise at this sd.
+
+where M1's uncertainty comes from (sd of M1, 000s, one term at a time):
+  all sources                     627
+  share growth only               218
+  trip factor only                195
+  uplift only                      80
+  method/backtest only            547
+
+==============================================================================
+9. HANDOFF CHECK -- RECONCILING WITH GUIDANCE AND THE PRICE ROLE
+==============================================================================
+Guidance implies Q3 2026 operating revenue of ~$8.08-8.30bn, and passenger
+revenue was ~92% of operating revenue in Q2 2026, so passenger revenue of
+~$7.43-7.64bn. Inverting that against this passenger forecast gives the
+average fare the Price role must land on for the team's product to sit inside
+the guided band:
+  $7.43bn / 32,912k passengers = $225.75 fare  (+23.7% YoY)
+  $7.64bn / 32,912k passengers = $232.13 fare  (+27.2% YoY)
+
+IS THAT FARE PATH PLAUSIBLE? Only if the $285M breakage reversal is handled.
+  Q2 2026 reported fare    $225.60  (+20.9% YoY)
+  Q2 2026 ex-breakage fare $233.90  (+25.3% YoY)
+  The reported +20.9% is depressed by the one-off reversal; the underlying run
+  rate was about +25%. So the $226-232 this forecast implies for Q3 is a slight
+  DECELERATION from Q2's underlying pace, not an acceleration -- which is exactly
+  what management flagged ('held back by the comparison with a quarter that
+  already had bag fees') and what the RASM guide says (+17.5-19.5% vs +20.1%
+  underlying in Q2). The passenger and fare halves are therefore consistent.
+
+  ACTION FOR THE TEAM: if the Price role builds its fare forecast off the
+  REPORTED $225.61 rather than the ex-breakage $233.90, it will understate the
+  fare, and the product will fall below the guided band for a reason that has
+  nothing to do with traffic. Agree the basis before multiplying.
+
+IMPLIED PASSENGER REVENUE from this forecast, at a range of fares:
+  fare $215  ->  $7.08bn   BELOW band
+  fare $220  ->  $7.24bn   BELOW band
+  fare $226  ->  $7.44bn   inside
+  fare $232  ->  $7.64bn   inside
+  fare $238  ->  $7.83bn   ABOVE band
+
+And the passenger count the band implies at the fares the Price role may pick:
+  fare $215  ->  34,558k to 35,535k passengers
+  fare $220  ->  33,773k to 34,727k passengers
+  fare $226  ->  32,876k to 33,805k passengers
+  fare $232  ->  32,026k to 32,931k passengers
+  This forecast (32,912k) sits inside that span for fares of roughly $225-232.
