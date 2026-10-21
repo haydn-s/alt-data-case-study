@@ -260,7 +260,7 @@ B1 would credit the model with a 4% edge that comes entirely from the breakage a
 | Fare | ±7.16% | **93%** | "Student-t, 5 df" implemented with the sd as the t's scale, 29% wider than Traffic's convention |
 
 **Recommended harmonised rule:** error sd over 2023Q1–2026Q2 (n=14), Student-t rescaled to that sd.
-Passengers **31,912 – 33,912** (±3.0%); fare **$215.87 – $242.82** (±5.9%).
+Passengers **31,912 – 33,912** (±3.0%); fare **$215.87 – $242.81** (±5.9%).
 
 ### E4. Passenger and fare errors are negatively correlated, so the product is tighter than the halves
 

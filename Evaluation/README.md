@@ -175,7 +175,7 @@ Student-t on 13 df rescaled to that sd:
 | | sd (14q) | Half-width | Point | **Harmonised 80% interval** | Delivered interval |
 |---|---|---|---|---|---|
 | Revenue passengers (M1 errors) | 2.45% | ±3.04% | 32,912 | **31,912 – 33,912** | 32,237 – 33,589 |
-| Average fare (OOS blend errors) | 4.73% | ±5.88% | $229.34 | **$215.87 – $242.82** | $212.92 – $245.75 |
+| Average fare (OOS blend errors) | 4.73% | ±5.88% | $229.34 | **$215.87 – $242.81** | $212.92 – $245.75 |
 
 [`outputs/interval_recommendation.csv`](outputs/interval_recommendation.csv). M1's errors are used for
 Traffic, not the blend's, because the blend's backtest runs on an ASM proxy rather than the guidance
