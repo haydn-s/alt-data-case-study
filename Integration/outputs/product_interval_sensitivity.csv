@@ -1,0 +1,5 @@
+variant,lo80,hi80,half_width_pct
+"harmonised, rho -0.4 [CHOSEN]",7134.37,7953.74,5.43
+"harmonised, rho 0 (independent)",7050.2,8052.59,6.64
+"harmonised, rho -0.76 (current era only)",7231.75,7846.91,4.07
+"roles' delivered widths, rho 0",6988.02,8111.56,7.44
