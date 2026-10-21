@@ -1,49 +1,61 @@
 """
 AIPI 590 Alternative Data -- Southwest Q3 2026 case study
-INTEGRATION ROLE: build the five-slide readout deck from the team's outputs.
+PRESENTATION: the five-slide deck uploaded for the Oct 28 readout (due Oct 27).
 
 The packet asks for at most five slides covering: forecast against actual, data
 and cleaning decisions, model and baselines, backtest by period, and what we got
-wrong and why. Every number on the slides is read from the pipeline's outputs,
-never typed in:
-  Integration/outputs/integration_summary.json   (from integrate.py)
+wrong and why. One slide per topic, in that order. Every number is read from the
+pipeline's outputs, never typed in:
+  Integration/outputs/integration_summary.json, scorecard.csv   (integrate.py)
   Evaluation/outputs/backtest_by_period.csv, dm_tests.csv
+  Presentation/deck_inputs.json                                  (team name, the "why")
 
-Before the print, slide 1 shows "pending" for the actuals and slide 5 lists the
-risks we pre-registered. Once actuals.json is filled and integrate.py re-run,
-the same script fills in the actuals and turns slide 5 into the scorecard.
+Before the print, every slot that needs the reported figures shows an amber
+[bracketed] placeholder, and the regions waiting on them are outlined in dashes.
+After the print: fill Integration/actuals.json, re-run integrate.py, write the
+one-sentence "why" into deck_inputs.json, and re-run this script.
 
-Run:  python Integration/build_deck.py      (after integrate.py)
+Run:  python Presentation/build_presentation.py      (after Integration/integrate.py)
 Needs: python-pptx
 """
 from pathlib import Path
+import io
 import json
+import re
+import zipfile
 import numpy as np
 import pandas as pd
+from lxml import etree
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
+from pptx.enum.dml import MSO_LINE_DASH_STYLE
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.chart.data import CategoryChartData, XyChartData
 from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION, XL_LABEL_POSITION, XL_MARKER_STYLE
+from pptx.oxml.ns import qn
 
 ROOT = Path(__file__).resolve().parent.parent
 HERE = Path(__file__).resolve().parent
-OUT = HERE / "outputs"
-DECK = HERE / "slides" / "southwest_q3_2026_readout.pptx"
-DECK.parent.mkdir(exist_ok=True)
+INTEG = ROOT / "Integration" / "outputs"
+DECK = HERE / "southwest_q3_2026_presentation.pptx"
 
-S = json.loads((OUT / "integration_summary.json").read_text())
+S = json.loads((INTEG / "integration_summary.json").read_text())
 BYP = pd.read_csv(ROOT / "Evaluation/outputs/backtest_by_period.csv")
 DM = pd.read_csv(ROOT / "Evaluation/outputs/dm_tests.csv")
+INP = json.loads((HERE / "deck_inputs.json").read_text())
+SW = pd.read_csv(ROOT / "data/southwest_quarterly_stats_2019Q1_2026Q2.csv").set_index("quarter")
 POST = S["actuals"] is not None
+SC = pd.read_csv(INTEG / "scorecard.csv") if POST else None
 
 # palette shared with the role charts: navy for our methods, coral for the naive
 # baseline, amber for the forecast itself, teal for the market
 INK, NAVY, CARD = "15202B", "1F3B73", "22324A"
 AMBER, CORAL, TEAL, GREY = "E9A13B", "D1495B", "2A9D8F", "8A94A3"
 PAPER, TINT, TEXT, MUTED = "FFFFFF", "EEF2F7", "1B1F24", "5B6573"
+SOFT = "AEB8C6"                          # secondary text on dark slides
+PH_LIGHT = "A15C00"                      # placeholder text on light slides (amber fails contrast)
 HEAD, BODY = "Cambria", "Calibri"
 
 def rgb(h):
@@ -127,6 +139,40 @@ def disc(slide, x, y, d, fill, label, color=PAPER, size=16):
     tf.vertical_anchor = MSO_ANCHOR.MIDDLE
     return shp
 
+def ph(label, dark=True):
+    """A placeholder run: amber, italic, bracketed -- unmistakable on the slide."""
+    return (f"[{label}]", {"italic": True, "bold": False, "color": AMBER if dark else PH_LIGHT})
+
+def ph_box(slide, x, y, w, h, dark=True, name="Placeholder: actuals"):
+    """Dashed outline around a region still waiting on the print."""
+    shp = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
+    shp.adjustments[0] = 0.12
+    shp.fill.background()
+    shp.line.color.rgb = rgb(AMBER if dark else PH_LIGHT)
+    shp.line.width = Pt(1.25)
+    shp.line.dash_style = MSO_LINE_DASH_STYLE.DASH
+    shp.shadow.inherit = False
+    shp.name = name
+    return shp
+
+def cell(c, runs, fill, size=14, color=PAPER, bold=False, align=PP_ALIGN.LEFT):
+    c.fill.solid()
+    c.fill.fore_color.rgb = rgb(fill)
+    c.margin_left = c.margin_right = Inches(0.1)
+    c.margin_top = c.margin_bottom = Inches(0.05)
+    c.vertical_anchor = MSO_ANCHOR.MIDDLE
+    tf = c.text_frame
+    tf.word_wrap = True
+    p = tf.paragraphs[0]
+    p.alignment = align
+    for chunk, opts in ([(runs, {})] if isinstance(runs, str) else runs):
+        r = p.add_run()
+        r.text = chunk
+        r.font.name, r.font.size = BODY, Pt(opts.get("size", size))
+        r.font.bold = opts.get("bold", bold)
+        r.font.italic = opts.get("italic", False)
+        r.font.color.rgb = rgb(opts.get("color", color))
+
 def style_axis_text(axis, size=12):
     axis.tick_labels.font.size = Pt(size)
     axis.tick_labels.font.name = BODY
@@ -152,8 +198,8 @@ def usd(x):
 def bn(x):
     return f"${x / 1000:,.2f}bn"
 
-def pct(x):
-    return f"{x:+.1f}%".replace("-", "−")
+def pct(x, d=1):
+    return f"{x:+.{d}f}%".replace("-", "−")
 
 
 pax, fare, rev, g, kal = S["pax"], S["fare"], S["revenue"], S["guidance"], S["kalshi"]
@@ -162,66 +208,92 @@ B0 = base["B0 same quarter last year"]
 B1p = base["B1 packet (reported Q2 basis)"]
 B1x = base["B1 ex-breakage Q2 basis"]
 act = S["actuals"] or {}
+a_pax, a_fare = act.get("revenue_passengers_000"), act.get("avg_passenger_fare_usd")
+a_rev = act.get("passenger_revenue_musd") or (a_pax * a_fare / 1000 if a_pax and a_fare else None)
+a_enp, a_asm = act.get("enplaned_passengers_000"), act.get("asm_millions")
+a_special = act.get("special_items_musd")
+ly = SW.loc["2025Q3"]
+tf_ly = ly["enplaned_passengers_000"] / ly["revenue_passengers_000"]
+tf_a = a_enp / a_pax if a_enp and a_pax else None
+
+def err(forecast, actual):
+    return (forecast / actual - 1) * 100
 
 
 # =============================================================================
 # SLIDE 1 -- the forecast against the actual
 # =============================================================================
 s1 = new_slide("Fewer passengers, a much higher fare", dark=True)
-text(s1, L, 1.25, W, 0.4,
-     "Southwest Airlines (LUV), Q3 2026  ·  forecast locked Oct 21 2026, 12:00 ET  ·  free public data only",
-     size=14, color="AEB8C6", name="Subtitle")
+team = INP.get("team_name")
+text(s1, L, 1.25, W, 0.4, [[
+    ("Southwest Airlines (LUV), Q3 2026  ·  ", {}),
+    (f"Team {team}", {}) if team else ph("team name"),
+    ("  ·  forecast committed Oct 20 2026  ·  free public data only", {})]],
+    size=14, color=SOFT, name="Subtitle")
 
-def actual_line(a, value_fmt, point, lo, hi):
+def actual_runs(a, value_fmt, point, lo, hi):
     if a is None:
-        return [[("Actual  ", {"bold": True, "color": "AEB8C6"}),
-                 ("reported Oct 21, after the close", {"color": "AEB8C6"})]]
-    err = (point / a - 1) * 100
+        return [[("Actual  ", {"bold": True, "color": SOFT}), ph("from the Q3 release")],
+                [("error ", {"color": SOFT}), ph("—"), ("  ·  in 80%? ", {"color": SOFT}), ph("—")]]
+    e = err(point, a)
     hit = lo <= a <= hi
-    return [[("Actual  ", {"bold": True, "color": "AEB8C6"}), (value_fmt(a), {"bold": True, "color": PAPER})],
-            [(f"error {pct(err)}  ·  ", {"color": "AEB8C6"}),
+    return [[("Actual  ", {"bold": True, "color": SOFT}), (value_fmt(a), {"bold": True, "color": PAPER})],
+            [(f"error {pct(e)}  ·  ", {"color": SOFT}),
              ("inside 80%" if hit else "outside 80%", {"bold": True, "color": TEAL if hit else CORAL})]]
 
-a_pax, a_fare = act.get("revenue_passengers_000"), act.get("avg_passenger_fare_usd")
-a_rev = act.get("passenger_revenue_musd") or (a_pax * a_fare / 1000 if a_pax and a_fare else None)
 cards = [
     ("REVENUE PASSENGERS", k(pax["point"]),
      f"80%  {pax['lo80']:,.0f} – {pax['hi80']:,.0f}k", f"{pct(pax['yoy_pct'])} YoY  ·  TSA + T-100 chain",
-     actual_line(a_pax, k, pax["point"], pax["lo80"], pax["hi80"])),
+     actual_runs(a_pax, k, pax["point"], pax["lo80"], pax["hi80"])),
     ("AVERAGE FARE", usd(fare["point"]),
      f"80%  {usd(fare['lo80'])} – {usd(fare['hi80'])}", f"{pct(fare['yoy_pct'])} YoY  ·  CPI, season, fuel blend",
-     actual_line(a_fare, usd, fare["point"], fare["lo80"], fare["hi80"])),
+     actual_runs(a_fare, usd, fare["point"], fare["lo80"], fare["hi80"])),
     ("PASSENGER REVENUE", bn(rev["point"]),
      f"80%  {bn(rev['lo80'])} – {bn(rev['hi80'])}",
      f"inside guided band {bn(g['band_seasonal_lo'])} – {bn(g['band_seasonal_hi'])}",
-     actual_line(a_rev, bn, rev["point"], rev["lo80"], rev["hi80"])),
+     actual_runs(a_rev, bn, rev["point"], rev["lo80"], rev["hi80"])),
 ]
 cw, gap, cy, ch = (W - 2 * 0.3) / 3, 0.3, 1.95, 3.55
-for i, (label, big, band, sub, act_runs) in enumerate(cards):
+for i, (label, big, band, sub, act_r) in enumerate(cards):
     x = L + i * (cw + gap)
     card(s1, x, cy, cw, ch, CARD, name=f"Card {label.title()}")
-    text(s1, x + 0.3, cy + 0.3, cw - 0.6, 0.3, label, size=12, bold=True, color="AEB8C6")
+    text(s1, x + 0.3, cy + 0.3, cw - 0.6, 0.3, label, size=12, bold=True, color=SOFT)
     text(s1, x + 0.3, cy + 0.65, cw - 0.6, 0.85, big, size=44, bold=True, color=AMBER, font=HEAD)
     text(s1, x + 0.3, cy + 1.55, cw - 0.6, 0.35, band, size=16, bold=True, color=PAPER)
-    text(s1, x + 0.3, cy + 1.95, cw - 0.6, 0.6, sub, size=14, color="AEB8C6")
-    ln = s1.shapes.add_connector(1, Inches(x + 0.3), Inches(cy + 2.6), Inches(x + cw - 0.3), Inches(cy + 2.6))
-    ln.line.color.rgb = rgb("3A4B63")
-    text(s1, x + 0.3, cy + 2.75, cw - 0.6, 0.65, act_runs, size=14, space_after=2)
+    text(s1, x + 0.3, cy + 1.95, cw - 0.6, 0.6, sub, size=14, color=SOFT)
+    if POST:
+        ln = s1.shapes.add_connector(1, Inches(x + 0.3), Inches(cy + 2.6), Inches(x + cw - 0.3), Inches(cy + 2.6))
+        ln.line.color.rgb = rgb("3A4B63")
+    else:
+        ph_box(s1, x + 0.15, cy + 2.55, cw - 0.3, 0.85)
+    text(s1, x + 0.3, cy + 2.7, cw - 0.6, 0.65, act_r, size=14, space_after=2)
 
-# benchmark strip
-by = 5.85
-text(s1, L, by, W, 0.3, "BENCHMARKS", size=12, bold=True, color="AEB8C6")
+# benchmark strip, with each benchmark's own error once the actuals are in
+by = 5.75
+text(s1, L, by, W, 0.3, "BENCHMARKS  ·  error vs actual", size=12, bold=True, color=SOFT)
+
+def bench_err(p_, f_):
+    if not POST:
+        return [ph("error vs actual")]
+    parts = []
+    if p_ is not None:
+        parts.append((f"pax {pct(err(p_, a_pax))}", {"color": SOFT}))
+    if f_ is not None:
+        parts.append(((" · " if parts else "") + f"fare {pct(err(f_, a_fare))}", {"color": SOFT}))
+    return parts
+
 bench = [
-    ("B0  same quarter last year", f"{B0['pax']:,.0f}k  ·  {usd(B0['fare'])}"),
-    ("B1  packet (reported Q2)", f"{B1p['pax']:,.0f}k  ·  {usd(B1p['fare'])}"),
-    ("B1  rebuilt ex-breakage", f"{B1x['pax']:,.0f}k  ·  {usd(B1x['fare'])}"),
-    ("Kalshi fare market, Oct 20", f"median ≈ {usd(kal['median'])}"),
+    ("B0  same quarter last year", f"{B0['pax']:,.0f}k  ·  {usd(B0['fare'])}", bench_err(B0["pax"], B0["fare"])),
+    ("B1  packet (reported Q2)", f"{B1p['pax']:,.0f}k  ·  {usd(B1p['fare'])}", bench_err(B1p["pax"], B1p["fare"])),
+    ("B1  rebuilt ex-breakage", f"{B1x['pax']:,.0f}k  ·  {usd(B1x['fare'])}", bench_err(B1x["pax"], B1x["fare"])),
+    ("Kalshi fare market, Oct 20", f"median ≈ {usd(kal['median'])}", bench_err(None, kal["median"])),
 ]
 bw = (W - 3 * 0.3) / 4
-for i, (lab, val) in enumerate(bench):
+for i, (lab, val, e_runs) in enumerate(bench):
     x = L + i * (bw + 0.3)
-    text(s1, x, by + 0.35, bw, 0.3, lab, size=12, color="AEB8C6")
-    text(s1, x, by + 0.65, bw, 0.35, val, size=16, bold=True, color=PAPER)
+    text(s1, x, by + 0.33, bw, 0.3, lab, size=12, color=SOFT)
+    text(s1, x, by + 0.6, bw, 0.35, val, size=16, bold=True, color=PAPER)
+    text(s1, x, by + 0.98, bw, 0.3, [e_runs], size=12, color=SOFT)
 notes(s1, (
     "Headline: Southwest carries about 5% fewer revenue passengers than a year ago but charges about "
     "25% more per passenger, so passenger revenue lands inside the band management's guidance implies. "
@@ -229,7 +301,10 @@ notes(s1, (
     "trip-factor bridge; the fare from three methods anchored on the BLS airfare index, seasonality and "
     "fuel. Intervals are Evaluation's harmonised 80% rule (post-COVID backtest error sd for both halves). "
     "The revenue interval uses a -0.4 error correlation because the fare is revenue divided by passengers. "
-    "Kalshi's fare market agrees with our centre to within a dollar but is tighter than our band."))
+    "Kalshi's fare market agreed with our centre to within a dollar but was tighter than our band. "
+    + ("Read the actuals and say, for each figure, whether it landed inside the 80% band and whether we "
+       "beat the naive baselines." if POST else
+       "[Placeholder: once Southwest reports, the actuals, errors and benchmark errors fill in here.]")))
 
 
 # =============================================================================
@@ -273,20 +348,8 @@ for j, wdt in enumerate([1.95, 3.05, tw - 5.0]):
     t.columns[j].width = Inches(wdt)
 for i, row in enumerate(rows):
     for j, val in enumerate(row):
-        c = t.cell(i, j)
-        c.fill.solid()
-        c.fill.fore_color.rgb = rgb(NAVY if i == 0 else (PAPER if i % 2 else TINT))
-        c.margin_left = c.margin_right = Inches(0.1)
-        c.margin_top = c.margin_bottom = Inches(0.06)
-        c.vertical_anchor = MSO_ANCHOR.MIDDLE
-        tf = c.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = val
-        f = p.runs[0].font
-        f.name, f.size = BODY, Pt(13)
-        f.bold = i == 0 or j == 0
-        f.color.rgb = rgb(PAPER if i == 0 else TEXT)
+        cell(t.cell(i, j), val, NAVY if i == 0 else (PAPER if i % 2 else TINT), size=13,
+             color=PAPER if i == 0 else TEXT, bold=i == 0 or j == 0)
 notes(s2, (
     "Which reported count does a checkpoint count measure? Enplaned passengers, not revenue passengers: "
     "a connecting trip is scanned once but boards twice, and the target counts it once. In Q2 2026 "
@@ -340,6 +403,9 @@ for x_, y_ in [(fare["lo80"], pax["point"]), (fare["hi80"], pax["point"])]:
 whisk2 = cd.add_series("Team 80% interval (passengers)")
 for x_, y_ in [(fare["point"], pax["lo80"]), (fare["point"], pax["hi80"])]:
     whisk2.add_data_point(x_, y_)
+if POST:                                 # added last so the legend indices above stay put
+    pt_series.append(("Actual", [(a_fare, a_pax)], INK))
+    cd.add_series("Actual").add_data_point(a_fare, a_pax)
 
 cx = L + 4.55
 gf = s3.shapes.add_chart(XL_CHART_TYPE.XY_SCATTER_LINES_NO_MARKERS, Inches(cx), Inches(1.4),
@@ -364,15 +430,14 @@ for ser in ch3.plots[0].series:
     else:                     # single points: marker only, no connecting line
         col = dict((a, c) for a, _, c in pt_series)[nm]
         ser.format.line.fill.background()
-        ser.marker.style = XL_MARKER_STYLE.CIRCLE if nm != "Team forecast" else XL_MARKER_STYLE.DIAMOND
-        ser.marker.size = 12 if nm == "Team forecast" else 10
+        ser.marker.style = {"Team forecast": XL_MARKER_STYLE.DIAMOND,
+                            "Actual": XL_MARKER_STYLE.TRIANGLE}.get(nm, XL_MARKER_STYLE.CIRCLE)
+        ser.marker.size = 12 if nm in ("Team forecast", "Actual") else 10
         ser.marker.format.fill.solid()
         ser.marker.format.fill.fore_color.rgb = rgb(col)
         ser.marker.format.line.color.rgb = rgb(PAPER)
 ch3.plots[0].vary_by_categories = False
 # show only the readable legend entries: drop the second band edge and the second whisker
-from lxml import etree
-from pptx.oxml.ns import qn
 leg = ch3.legend._element
 for idx in (1, 7):
     le = etree.SubElement(leg, qn("c:legendEntry"))
@@ -393,10 +458,12 @@ for ax in (va, ca):
     ax.format.line.color.rgb = rgb("C9D1DC")
 axis_title(va, "Revenue passengers (000s)")
 axis_title(ca, "Average fare ($)")
-text(s3, cx, 6.45, R - cx, 0.6,
-     f"Teal lines: passenger revenue implied by guidance, {bn(g['band_seasonal_lo'])}–{bn(g['band_seasonal_hi'])} "
-     f"at a {g['share_seasonal']:.1%} passenger share. Both naive baselines miss it, on opposite sides.",
-     size=12, color=MUTED)
+text(s3, cx, 6.45, R - cx, 0.6, [[
+    (f"Teal lines: passenger revenue implied by guidance, {bn(g['band_seasonal_lo'])}–{bn(g['band_seasonal_hi'])} "
+     f"at a {g['share_seasonal']:.1%} passenger share. Both naive baselines miss it, on opposite sides. ", {}),
+    (f"Triangle: the actual, {k(a_pax)} × {usd(a_fare)}.", {"bold": True, "color": INK}) if POST
+    else ph("the actual is plotted here after the print", dark=False)]],
+    size=12, color=MUTED)
 notes(s3, (
     "Guidance pins passenger revenue to a narrow band, the teal curves. Any point between them satisfies "
     "guidance: flat passengers at about $215-220, or 5% fewer passengers at about $225-231. Those are "
@@ -490,106 +557,128 @@ notes(s4, (
 
 
 # =============================================================================
-# SLIDE 5 -- what we got wrong and why (pre-registered before the print)
+# SLIDE 5 -- what we got wrong and why
 # =============================================================================
-s5 = new_slide("What we got wrong, and why" if POST else "What would make us wrong", dark=True)
+s5 = new_slide("What we got wrong, and why", dark=True)
 lx, lw5 = L, 7.35
-if not POST:
-    text(s5, lx, 1.3, lw5, 0.35, "PRE-REGISTERED BEFORE THE PRINT", size=12, bold=True, color="AEB8C6")
-    risks = [
-        ("Trip factor", f"We assume {pax['trip_factor']:.4f}, +3.4% YoY. With no 2026 step the "
-                        f"TSA chain gives ~33,900k: above B1, at the top edge of our 80% band."),
-        ("A one-off in the print", "Q2's $285M breakage moved the reported fare by $8. We forecast "
-                                   "the underlying fare."),
-        ("Capacity below guide", "July domestic ASMs ran −1.8% YoY against a −1% to flat guide: "
-                                 "about −160k passengers."),
-        ("The naive regression", f"Refitted, it says {k(pax['M3'])}, 2.1% below us. We think it "
-                                 f"misses the share flip, but the gap is large."),
-    ]
-    for i, (h_, b_) in enumerate(risks):
-        y = 1.8 + i * 1.18
-        disc(s5, lx, y + 0.02, 0.42, CORAL, str(i + 1), size=14)
-        text(s5, lx + 0.65, y, lw5 - 0.65, 0.35, h_, size=16, bold=True, color=PAPER)
-        text(s5, lx + 0.65, y + 0.38, lw5 - 0.65, 0.75, b_, size=14, color="D5DCE6")
-else:
-    sc = pd.read_csv(OUT / "scorecard.csv")
-    text(s5, lx, 1.3, lw5, 0.35, "SCORECARD", size=12, bold=True, color="AEB8C6")
-    tbl5 = s5.shapes.add_table(len(sc) + 1, 5, Inches(lx), Inches(1.75), Inches(lw5), Inches(2.0))
-    tbl5.name = "Scorecard"
-    hdr = ["", "Forecast", "Actual", "Error", "B1 error"]
-    fmt = [lambda v: f"{v:,.0f}k", lambda v: usd(v), lambda v: bn(v)]
-    for j, h_ in enumerate(hdr):
-        tbl5.table.cell(0, j).text = h_
-    for i, r_ in sc.iterrows():
-        vals = [r_["target"].split(" (")[0].capitalize(), fmt[i](r_["team"]), fmt[i](r_["actual"]),
-                pct(r_['team_err_pct']) + (" ✓" if r_["in_80"] else " ✗"),
-                pct(r_['B1_exbreakage_err_pct'])]
-        for j, v in enumerate(vals):
-            tbl5.table.cell(i + 1, j).text = v
-    for i in range(len(sc) + 1):
-        for j in range(5):
-            c = tbl5.table.cell(i, j)
-            c.fill.solid()
-            c.fill.fore_color.rgb = rgb(NAVY if i == 0 else CARD)
-            f = c.text_frame.paragraphs[0].runs[0].font if c.text_frame.paragraphs[0].runs else None
-            if f:
-                f.name, f.size, f.color.rgb = BODY, Pt(14), rgb(PAPER)
-                f.bold = i == 0 or j == 0
-    d = S["decomposition"]
-    why = ([[("Passenger miss, log %: ", {"bold": True, "color": PAPER}),
-             (f"{pct(d['total_log_err_pct'])} = boardings {pct(d['boardings_log_err_pct'])} "
-              f"(the TSA chain) + trip factor {pct(d['trip_factor_log_err_pct'])} (the bridge). "
-              f"Trip factor forecast {d['trip_factor_forecast']:.4f}, actual {d['trip_factor_actual']:.4f}.",
-              {"color": "D5DCE6"})]] if d else
-           [[("Add enplaned passengers to actuals.json ", {"bold": True, "color": PAPER}),
-             ("to split the passenger miss into boardings vs trip factor.", {"color": "D5DCE6"})]])
-    text(s5, lx, 4.25, lw5, 0.7, why, size=14)
-    text(s5, lx, 5.0, lw5, 1.5, [
-        [("Pre-registered risks: ", {"bold": True, "color": PAPER}),
-         ("trip factor; a one-off in the print; capacity below guide; the naive regression's lower call. "
-          "Say which one hit.", {"color": "D5DCE6"})]], size=14)
 
+# --- scorecard -----------------------------------------------------------------
+text(s5, lx, 1.3, lw5, 0.3, "SCORECARD", size=12, bold=True, color=SOFT)
+sc_rows = [("Revenue passengers", k(pax["point"]), k, a_pax, pax["point"], pax["lo80"], pax["hi80"], B1p["pax"]),
+           ("Average fare", usd(fare["point"]), usd, a_fare, fare["point"], fare["lo80"], fare["hi80"], B1x["fare"]),
+           ("Passenger revenue", bn(rev["point"]), bn, a_rev, rev["point"], rev["lo80"], rev["hi80"], B1x["revenue"])]
+tb5 = s5.shapes.add_table(len(sc_rows) + 1, 5, Inches(lx), Inches(1.65), Inches(lw5), Inches(1.6))
+tb5.name = "Scorecard"
+t5 = tb5.table
+for j, wdt in enumerate([2.15, 1.3, 1.3, 1.3, 1.3]):
+    t5.columns[j].width = Inches(wdt)
+for j, h_ in enumerate(["", "Forecast", "Actual", "Error, in 80%?", "B1 error"]):
+    cell(t5.cell(0, j), h_, NAVY, size=13, bold=True)
+for i, (lab, f_txt, fmt, a, pt_, lo, hi, b1) in enumerate(sc_rows, start=1):
+    cell(t5.cell(i, 0), lab, CARD, size=14, bold=True)
+    cell(t5.cell(i, 1), f_txt, CARD, size=14)
+    if a is None:
+        for j in (2, 3, 4):
+            cell(t5.cell(i, j), [ph("—")], CARD, size=14)
+    else:
+        hit = lo <= a <= hi
+        cell(t5.cell(i, 2), fmt(a), CARD, size=14)
+        cell(t5.cell(i, 3), [(pct(err(pt_, a)) + "  ", {}),
+                             ("✓" if hit else "✗", {"bold": True, "color": TEAL if hit else CORAL})], CARD, size=14)
+        cell(t5.cell(i, 4), pct(err(b1, a)), CARD, size=14)
+
+# --- the risks we registered before the print, and what each turned into --------
+text(s5, lx, 3.5, lw5, 0.3, "WHY  ·  THE FOUR RISKS WE REGISTERED BEFORE THE PRINT", size=12, bold=True, color=SOFT)
+
+def outcome(make):
+    """make() builds the reported value; until the release field exists, a placeholder."""
+    try:
+        return [(make(), {"bold": True})]
+    except TypeError:                    # a field in actuals.json is still null
+        return [ph("after the print")]
+
+risks = [
+    ("Trip factor", f"{pax['trip_factor']:.4f} ({pct((pax['trip_factor'] / tf_ly - 1) * 100)} YoY)",
+     outcome(lambda: f"{tf_a:.4f} ({pct((tf_a / tf_ly - 1) * 100)} YoY)")),
+    ("A one-off in the print", "none in Q3",
+     outcome(lambda: "none" if float(a_special) == 0 else f"${a_special:,.0f}M")),
+    ("Capacity below guide", "ASMs −1% to flat",
+     outcome(lambda: f"{pct((a_asm / ly['asm_millions'] - 1) * 100)} YoY")),
+    ("Naive regression lower", f"{k(pax['M3'])} vs our {k(pax['point'])}",
+     outcome(lambda: "closer to " + ("the regression" if abs(a_pax - pax["M3"]) < abs(a_pax - pax["point"])
+                                     else "us"))),
+]
+tr5 = s5.shapes.add_table(len(risks) + 1, 3, Inches(lx), Inches(3.85), Inches(lw5), Inches(1.9))
+tr5.name = "Risk ledger"
+tr = tr5.table
+for j, wdt in enumerate([2.45, 2.45, 2.45]):
+    tr.columns[j].width = Inches(wdt)
+for j, h_ in enumerate(["Risk", "We assumed", "What happened"]):
+    cell(tr.cell(0, j), h_, NAVY, size=13, bold=True)
+for i, (name, assumed, happened) in enumerate(risks, start=1):
+    cell(tr.cell(i, 0), [(f"{i}  ", {"color": CORAL, "bold": True}), (name, {"bold": True})], CARD, size=14)
+    cell(tr.cell(i, 1), assumed, CARD, size=14)
+    cell(tr.cell(i, 2), happened, CARD, size=14)
+
+# --- the decomposition and the one-sentence answer ------------------------------
+d = S["decomposition"]
+decomp = ([("Passenger miss  ", {"bold": True, "color": PAPER}),
+           (f"{pct(d['total_log_err_pct'], 2)} = boardings {pct(d['boardings_log_err_pct'], 2)} (TSA chain) "
+            f"+ trip factor {pct(d['trip_factor_log_err_pct'], 2)} (the bridge)", {"color": "D5DCE6"})]
+          if d else
+          [("Passenger miss  ", {"bold": True, "color": PAPER}), ph("total"), (" = boardings ", {"color": "D5DCE6"}),
+           ph("TSA chain"), (" + trip factor ", {"color": "D5DCE6"}), ph("the bridge")])
+why = INP.get("why")
+text(s5, lx, 5.95, lw5, 0.35, [decomp], size=14)
+text(s5, lx, 6.35, lw5, 0.6, [[("Why  ", {"bold": True, "color": PAPER}),
+                               (why, {"color": "D5DCE6"}) if why else
+                               ph("one sentence: which risk hit, and what it means for the Flag")]], size=14)
+
+# --- PoV card, with each downgrade trigger's status after Q3 ----------------------
 px = L + lw5 + 0.45
 pw = R - px
-card(s5, px, 1.3, pw, 5.55, CARD, name="PoV card")
-text(s5, px + 0.35, 1.6, pw - 0.7, 0.35, "OUR POV  ·  TEAM FLAG", size=12, bold=True, color=AMBER)
-text(s5, px + 0.35, 2.0, pw - 0.7, 1.3,
-     "Sell the passenger nowcast and the fare attribution, with a regime flag. Do not sell the revenue "
+card(s5, px, 1.3, pw, 5.65, CARD, name="PoV card")
+text(s5, px + 0.35, 1.55, pw - 0.7, 0.3, "OUR POV  ·  TEAM FLAG", size=12, bold=True, color=AMBER)
+text(s5, px + 0.35, 1.9, pw - 0.7, 1.2,
+     "Sell the passenger nowcast and the fare attribution, with a regime flag. Don't sell the revenue "
      "point as beating naive.", size=16, bold=True, color=PAPER)
-text(s5, px + 0.35, 3.45, pw - 0.7, 0.3, "Downgrade when", size=14, bold=True, color="AEB8C6")
+text(s5, px + 0.35, 3.2, pw - 0.7, 0.3, "DOWNGRADE TRIGGERS AFTER Q3", size=12, bold=True, color=SOFT)
+
+def status(ready, label, ok):
+    if not ready:
+        return [ph("after the print")]
+    return [(label, {"bold": True, "color": TEAL if ok else CORAL})]
+
+tf_off = abs(tf_a / pax["trip_factor"] - 1) * 100 if tf_a else None
+tf_ok = tf_off is not None and tf_off <= 1.5
+m1_won = a_pax is not None and abs(err(pax["M1"], a_pax)) < abs(err(B1p["pax"], a_pax))
 triggers = [
-    "The trip factor moves >1.5 pt off trend",
-    "Southwest's TSA share turns negative two months running",
-    "The TSA chain loses to B1 two quarters running",
-    "A funding lapse or a TSA collection change",
-    "The TSA chain and the naive regression split by >2% (raised for Q3)",
+    ("Trip factor >1.5 pt off forecast",
+     status(tf_off is not None, f"{tf_off or 0:.1f} pt · " + ("clear" if tf_ok else "hit"), tf_ok)),
+    ("TSA chain loses to B1", status(a_pax is not None, "won" if m1_won else "lost", m1_won)),
+    ("Chain and regression split >2%", [("raised (2.1%)", {"bold": True, "color": AMBER})]),
+    ("Southwest's TSA share negative two months", [("check T-100", {"italic": True, "color": SOFT})]),
+    ("A funding lapse or TSA collection change", [("none in Q3", {"bold": True, "color": TEAL})]),
 ]
-tb = text(s5, px + 0.35, 3.85, pw - 0.7, 2.8, triggers, size=14, color="D5DCE6", space_after=6)
-for p in tb.text_frame.paragraphs:
-    pPr = p._p.get_or_add_pPr()
-    pPr.set("marL", str(Inches(0.25)))
-    pPr.set("indent", str(-Inches(0.25)))
-    bu = etree.SubElement(pPr, qn("a:buChar"))
-    bu.set("char", "•")
+for i, (trig, st) in enumerate(triggers):
+    y = 3.6 + i * 0.62
+    text(s5, px + 0.35, y, pw - 2.15, 0.6, trig, size=14, color="D5DCE6")
+    text(s5, px + pw - 1.75, y, 1.45, 0.6, [st], size=13, align=PP_ALIGN.RIGHT)
 notes(s5, (
-    "Before the print we wrote down what would make us wrong, in order of how much each could move the "
-    "answer. The trip factor is the whole passenger call: it is extrapolated from four quarters and no "
-    "public source observes it. A one-off revenue item would move the reported fare with no signal in "
-    "public data. July capacity ran below the bottom of guidance. And the naive regression, which is "
-    "nearly as accurate as our chain out of sample, says 2% lower. After the print, re-run integrate.py "
-    "with actuals.json filled and this slide becomes the scorecard, with the passenger miss split into a "
-    "boardings error and a trip-factor error. PoV for the debate: Flag."
-    if not POST else
-    "Scorecard against the print. The passenger miss is split exactly, in logs, into the boardings "
-    "nowcast (TSA and T-100) and the trip factor (the accounting bridge). Say which pre-registered risk "
-    "materialised and whether the Flag conditions were triggered."))
+    "Before the print we registered four risks, in order of how much each could move the answer. The "
+    "scorecard shows how the forecast did; the ledger shows what each risk turned into; the passenger "
+    "miss splits exactly, in logs, into the boardings nowcast (TSA and T-100, the alternative data) and "
+    "the trip factor (the accounting bridge, which no public source observes). That split is the test of "
+    "our debate position: if the bridge failed and the boardings held, the Flag case is confirmed. The "
+    "PoV card shows each downgrade trigger's status for the Q4 decision exercise. "
+    + ("" if POST else "[Placeholder: every amber bracket fills in once Integration/actuals.json carries "
+                       "the Q3 release figures; the 'why' sentence comes from Presentation/deck_inputs.json.]")))
 
 prs.save(DECK)
 
 # Make the build byte-reproducible like the other pipelines: python-pptx stamps
 # every zip entry with the wall clock, and each chart's embedded workbook also
 # records its creation time. Pin both so a re-run with the same inputs is a no-op.
-import io, re, zipfile
 FIXED = (2026, 10, 21, 12, 0, 0)
 
 def _pinned_zip(blob, rewrite=lambda n, b: b):
@@ -609,5 +698,11 @@ def _pin_workbook(name, blob):
     return blob
 
 DECK.write_bytes(_pinned_zip(DECK.read_bytes(), _pin_workbook))
-print(f"wrote {DECK.relative_to(ROOT)}  ({'post-print scorecard' if POST else 'pre-print'} version, "
-      f"{len(prs.slides)} slides)")
+n_ph = sum(r.text.startswith("[") and r.text.endswith("]")
+           for s in prs.slides for shp in s.shapes if shp.has_text_frame
+           for p in shp.text_frame.paragraphs for r in p.runs)
+n_ph += sum(r.text.startswith("[") and r.text.endswith("]")
+            for s in prs.slides for shp in s.shapes if shp.has_table
+            for row in shp.table.rows for c in row.cells for p in c.text_frame.paragraphs for r in p.runs)
+print(f"wrote {DECK.relative_to(ROOT)}  ({len(prs.slides)} slides, "
+      f"{'post-print' if POST else 'pre-print'}, {n_ph} placeholders left)")

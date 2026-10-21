@@ -87,4 +87,4 @@ market may be under-pricing.
 7. SCORECARD AGAINST THE PRINT
 ==============================================================================
 actuals.json has no reported figures yet (Southwest reports Oct 21 after the close).
-Fill it from the Q3 2026 release and re-run this script and build_deck.py.
+Fill it from the Q3 2026 release and re-run this script and Presentation/build_presentation.py.

@@ -310,7 +310,7 @@ four quarters; (3) M1 and M3 diverge by more than 2%, which is **already raised 
 ## Integration
 
 **Deliverable: the form values (top of this document), the guidance check, and the five-slide deck
-[`Integration/slides/southwest_q3_2026_readout.pptx`](Integration/slides/southwest_q3_2026_readout.pptx).**
+[`Presentation/southwest_q3_2026_presentation.pptx`](Presentation/southwest_q3_2026_presentation.pptx).**
 Full method and code: [`Integration/README.md`](Integration/README.md).
 
 ### I1. The product is $7,548M and sits inside the guided band — on either share assumption
@@ -350,6 +350,6 @@ $215.87–242.81. Benchmark only; it does not enter the forecast.
 - **Share price (optional): left blank.** With no demonstrated edge on revenue we have no informed view
   on the reaction. Random-walk would be the honest entry.
 - **After the print:** fill `Integration/actuals.json` (including **enplaned passengers**) and re-run
-  `integrate.py` and `build_deck.py`. Slide 5 then becomes the scorecard, with the passenger miss split
+  `integrate.py` and `Presentation/build_presentation.py`. Slide 5's scorecard then fills in, with the passenger miss split
   exactly into a boardings error and a trip-factor error. That split is the test of F1/F2: whether the
   alternative data or the accounting bridge failed.
