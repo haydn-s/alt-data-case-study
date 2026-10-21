@@ -1,0 +1,296 @@
+
+==============================================================================
+1. LOAD THE SHARED INPUTS (same cleaning as the roles)
+==============================================================================
+Southwest quarters: 30  (2019Q1 .. 2026Q2)
+Q2 2026 fare: reported $225.61, ex-breakage $233.90  (the basis both roles forecast)
+TSA, T-100, BLS CPI and EIA spot loaded with the roles' cleaning decisions:
+  TSA: no day imputed; T-100 share = segment pax / TSA; CPI Oct 2025 interpolated;
+  EIA holiday blanks dropped; Q2 2026 passenger revenue +$285M (ex-breakage).
+
+==============================================================================
+2. METHODS RE-IMPLEMENTED FROM EACH ROLE'S WRITE-UP
+==============================================================================
+Traffic: M1 TSA chain, M2 capacity identity (ASM from a T-100 proxy, and an
+         'oracle' run on actual ASMs), M3 naive OLS refitted each quarter.
+Price:   P1 industry anchor, P2 seasonal step, P3 fuel pass-through, M4 naive
+         regression. Baselines B0 (same quarter last year), B1 (B0 x last YoY).
+
+==============================================================================
+3. BACKTEST 2022Q1 - 2026Q2
+==============================================================================
+Revenue passengers, % error (forecast / actual - 1):
+         M1_err  M2_err  M2_oracle_err  T_BLEND_err  M3_err  pax_B0_err  pax_B1_err
+quarter                                                                            
+2022Q1    11.89   26.76          24.14        17.10     NaN      -45.35       29.00
+2022Q2     9.97   15.81           8.99        12.02     NaN      -21.27       44.06
+2022Q3    -1.41    3.17           5.46         0.19     NaN      -14.90        8.09
+2022Q4     2.23    5.81           2.17         3.48     NaN      -10.56        5.10
+2023Q1     2.41    7.22           5.76         4.09    1.70      -13.90       -3.73
+2023Q2    -1.00    6.97           5.89         1.79    0.14       -6.97        8.04
+2023Q3     3.66    8.19           6.61         5.24    5.24       -2.59        4.72
+2023Q4    -4.83   -1.53           1.68        -3.68   -2.87       -8.57       -6.14
+2024Q1    -2.49   -9.28          -6.87        -4.87   -4.42       -8.03        0.59
+2024Q2     0.78   -2.46          -3.03        -0.35   -1.65       -4.78        3.54
+2024Q3     2.81    6.66           1.39         4.16    0.65       -0.47        4.53
+2024Q4     2.21   -1.65          -1.38         0.86    4.55        5.44        5.94
+2025Q1    -0.71    2.21           6.28         0.31    4.58        9.61        3.95
+2025Q2    -1.39    4.33           4.80         0.61    0.04        5.64       -3.62
+2025Q3    -1.99   -2.49          -3.15        -2.16   -1.02        2.70       -2.78
+2025Q4     1.16    2.67           1.33         1.69   -3.03        0.27       -2.37
+2026Q1     2.17   -1.09          -1.95         1.03    0.01        2.79        2.51
+2026Q2    -1.57    0.27          -0.54        -0.93   -1.75        3.43        0.61
+
+Average fare, % error (vs ex-breakage fare in 2026Q2, as both roles forecast):
+         P1_err  P2_err  P3_err  P_BLEND_insample_err  P_BLEND_equal_err  P_BLEND_oos_err  M4_err  fare_B0_err  fare_B1_err
+quarter                                                                                                                    
+2022Q1     2.41   -2.49   -9.56                 -4.38              -3.21            -3.21     NaN       -24.24       -12.05
+2022Q2    16.20  -10.48    3.77                  2.03               3.16             3.16     NaN       -25.92        -2.21
+2022Q3    18.62    9.56   14.48                 13.84              14.22            13.73     NaN       -11.51        19.45
+2022Q4     5.15   -5.02   -3.16                 -1.80              -1.01            -1.85     NaN        -8.05         3.91
+2023Q1    -7.28   -1.94   -3.11                 -3.72              -4.11            -4.11   25.09        -5.92         2.31
+2023Q2   -21.57   -4.39   -8.98                -10.46             -11.65           -11.65  -24.82         2.63         9.10
+2023Q3    -8.97   -1.86   -1.93                 -3.58              -4.25            -3.18   -7.87        -2.53        -5.04
+2023Q4     4.34   -0.95    1.14                  1.21               1.51             0.59   -2.17        -2.42         0.11
+2024Q1     5.31    0.95   -1.68                  0.85               1.53             1.03   -0.05        -2.82        -0.40
+2024Q2     4.26    1.56    6.17                  4.19               4.00             3.32    3.51         0.28         3.19
+2024Q3    -0.48   -4.86  -10.17                 -6.11              -5.17            -5.40   -0.74        -4.96        -5.23
+2024Q4     4.60   -0.22   -4.77                 -1.04              -0.13            -0.42   -0.24        -6.60        -1.73
+2025Q1    -8.78   -5.04   -2.15                 -4.68              -5.32            -5.32   -5.88       -10.32        -3.98
+2025Q2    -0.06    5.86    6.42                  4.69               4.07             4.07   -1.10        -4.12         6.91
+2025Q3     9.83    0.21    3.62                  3.97               4.55             4.31    2.55        -3.60         0.54
+2025Q4    -9.92   -6.13   -2.80                 -5.59              -6.28            -5.76   -3.71        -7.30        -3.83
+2026Q1     4.15   -7.02   -4.38                 -3.22              -2.42            -3.32   -7.08       -14.23        -7.48
+2026Q2     7.44    2.22    2.66                  3.65               4.11             3.69   -8.82       -20.21        -6.97
+
+Passenger revenue ($M), % error:
+         REV_team_err  REV_M1xPoos_err  rev_B0_err  rev_B1_err
+quarter                                                       
+2022Q1          13.33             8.30      -58.60       13.45
+2022Q2          15.56            13.45      -41.67       40.88
+2022Q3          13.95            12.13      -24.69       29.11
+2022Q4           1.57             0.34      -17.76        9.21
+2023Q1          -0.19            -1.80      -19.00       -1.51
+2023Q2         -10.07           -12.53       -4.52       17.87
+2023Q3           1.89             0.36       -5.06       -0.56
+2023Q4          -3.11            -4.27      -10.79       -6.04
+2024Q1          -3.89            -1.49      -10.63        0.18
+2024Q2           2.96             4.13       -4.51        6.84
+2024Q3          -1.47            -2.74       -5.41       -0.94
+2024Q4           0.44             1.78       -1.52        4.11
+2025Q1          -5.03            -6.00       -1.70       -0.18
+2025Q2           4.71             2.63        1.28        3.04
+2025Q3           2.06             2.24       -1.00       -2.25
+2025Q4          -4.17            -4.67       -7.04       -6.11
+2026Q1          -2.33            -1.23      -11.83       -5.15
+2026Q2           2.73             2.07      -17.47       -6.39
+
+==============================================================================
+4. REPRODUCTION AUDIT AGAINST EACH ROLE'S COMMITTED BACKTEST
+==============================================================================
+   role series       quarters  n  max_abs_diff    unit
+Traffic     M1 2022Q1..2026Q2 18        0.0000 000 pax
+Traffic     B0 2022Q1..2026Q2 18        0.0000 000 pax
+Traffic     B1 2022Q1..2026Q2 18        0.0000 000 pax
+  Price     P1 2023Q1..2026Q2 14        0.0004       $
+  Price     P2 2023Q1..2026Q2 14        0.0005       $
+  Price     P3 2023Q1..2026Q2 14        0.0004       $
+  Price     M4 2023Q1..2026Q2 14        0.0005       $
+  Price     B0 2023Q1..2026Q2 14        0.0005       $
+  Price     B1 2023Q1..2026Q2 14        0.0005       $
+  Price  BLEND 2023Q1..2026Q2 14        0.0093       $
+
+All series reproduce to within 0.01 of the committed values: True
+Both roles' backtests are reproducible from their write-ups alone.
+
+==============================================================================
+5. BACKTEST TABLE BY PERIOD
+==============================================================================
+MAPE (%) -- REVENUE PASSENGERS
+method                            M1     M2  M2_oracle  T_BLEND    M3  pax_B0  pax_B1
+period                                                                               
+2022-2024 (pre fee change)      3.81   7.96       6.11     4.82  2.65   11.90   10.29
+  of which 2022 (COVID base)    6.38  12.89      10.19     8.20   NaN   23.02   21.56
+  of which 2023-2024            2.52   5.50       4.08     3.13  2.65    6.35    4.65
+2025-2026 (fee + model change)  1.50   2.18       3.01     1.12  1.74    4.07    2.64
+full sample 2022Q1-2026Q2       3.04   6.03       5.08     3.59  2.26    9.29    7.74
+
+MAPE (%) -- AVERAGE FARE
+method                             P1    P2    P3  P_BLEND_insample  P_BLEND_equal  P_BLEND_oos    M4  fare_B0  fare_B1
+period                                                                                                                 
+2022-2024 (pre fee change)       8.27  3.69  5.74              4.43           4.50         4.31  8.06     8.16     5.39
+  of which 2022 (COVID base)    10.60  6.89  7.74              5.51           5.40         5.49   NaN    17.43     9.41
+  of which 2023-2024             7.10  2.09  4.74              3.90           4.04         3.71  8.06     3.52     3.39
+2025-2026 (fee + model change)   6.70  4.41  3.67              4.30           4.46         4.42  4.86     9.96     4.95
+full sample 2022Q1-2026Q2        7.74  3.93  5.05              4.39           4.48         4.34  6.69     8.76     5.25
+
+MAPE (%) -- PASSENGER REVENUE (the product)
+method                          REV_team  REV_M1xPoos  rev_B0  rev_B1
+period                                                               
+2022-2024 (pre fee change)          5.70         5.28   17.01   10.89
+  of which 2022 (COVID base)       11.10         8.55   35.68   23.16
+  of which 2023-2024                3.00         3.64    7.68    4.75
+2025-2026 (fee + model change)      3.51         3.14    6.72    3.85
+full sample 2022Q1-2026Q2           4.97         4.56   13.58    8.55
+
+Current era, quarters each method beats B1 (|err| smaller):
+  M1               5/6
+  T_BLEND          5/6
+  M3               3/6
+  P2               4/6
+  P3               5/6
+  P_BLEND_oos      3/6
+  P_BLEND_equal    3/6
+  REV_team         4/6
+
+==============================================================================
+6. IS THE EDGE OVER BASELINE B1 STATISTICALLY DISTINGUISHABLE?
+==============================================================================
+   period       model      vs  n  dm_stat  p_value
+2022-2024          M1  pax_B1 12   -1.470    0.169
+2022-2024     T_BLEND  pax_B1 12   -1.396    0.190
+2022-2024          P2 fare_B1 12   -1.224    0.247
+2022-2024          P3 fare_B1 12   -0.541    0.599
+2022-2024 P_BLEND_oos fare_B1 12   -1.192    0.258
+2022-2024    REV_team  rev_B1 12   -1.648    0.128
+2023-2024          M1  pax_B1  8   -2.433    0.045
+2023-2024     T_BLEND  pax_B1  8   -1.390    0.207
+2023-2024          P2 fare_B1  8   -1.612    0.151
+2023-2024          P3 fare_B1  8    1.309    0.232
+2023-2024 P_BLEND_oos fare_B1  8    0.881    0.408
+2023-2024    REV_team  rev_B1  8   -1.315    0.230
+2025-2026          M1  pax_B1  6   -2.175    0.082
+2025-2026     T_BLEND  pax_B1  6   -2.527    0.053
+2025-2026          P2 fare_B1  6   -0.568    0.595
+2025-2026          P3 fare_B1  6   -1.794    0.133
+2025-2026 P_BLEND_oos fare_B1  6   -0.846    0.436
+2025-2026    REV_team  rev_B1  6   -0.671    0.532
+     full          M1  pax_B1 18   -1.466    0.161
+     full     T_BLEND  pax_B1 18   -1.401    0.179
+     full          P2 fare_B1 18   -1.301    0.211
+     full          P3 fare_B1 18   -0.970    0.345
+     full P_BLEND_oos fare_B1 18   -1.406    0.178
+     full    REV_team  rev_B1 18   -1.635    0.120
+
+Negative = the model's squared errors are smaller than B1's. With n = 6 in the
+current era, nothing short of a very large and consistent edge reaches p < 0.10.
+
+==============================================================================
+7. INTERVAL CALIBRATION
+==============================================================================
+(a) Each role's delivered half-width applied to its own backtest errors:
+                 series    period  half_width_pct  n  covered  coverage
+        Traffic (blend) 2023-2024           2.054  8        3     0.375
+        Traffic (blend) 2025-2026           2.054  6        5     0.833
+           Traffic (M1) 2023-2024           2.054  8        2     0.250
+           Traffic (M1) 2025-2026           2.054  6        5     0.833
+      Price (OOS blend) 2023-2024           7.157  8        7     0.875
+      Price (OOS blend) 2025-2026           7.157  6        6     1.000
+Price (in-sample blend) 2023-2024           7.157  8        7     0.875
+Price (in-sample blend) 2025-2026           7.157  6        6     1.000
+
+    Traffic's interval is +/-2.05%; Price's is +/-7.16%.
+
+(b) Rolling rule: half-width = k x sd of the previous six errors (vintage-legal):
+                                     check          series        period  half_width_pct  n  covered  coverage
+rolling 6q sd, t5 rescaled to sd (Traffic)      Traffic M1 2023Q3-2024Q4           4.308  6        5     0.833
+rolling 6q sd, t5 rescaled to sd (Traffic)      Traffic M1     2025-2026           2.692  6        6     1.000
+                     rolling 6q sd, normal      Traffic M1 2023Q3-2024Q4           4.829  6        6     1.000
+                     rolling 6q sd, normal      Traffic M1     2025-2026           3.018  6        6     1.000
+rolling 6q sd, t5 with sd as scale (Price)      Traffic M1 2023Q3-2024Q4           5.561  6        6     1.000
+rolling 6q sd, t5 with sd as scale (Price)      Traffic M1     2025-2026           3.475  6        6     1.000
+rolling 6q sd, t5 rescaled to sd (Traffic)   Traffic blend 2023Q3-2024Q4           5.037  6        5     0.833
+rolling 6q sd, t5 rescaled to sd (Traffic)   Traffic blend     2025-2026           2.989  6        6     1.000
+                     rolling 6q sd, normal   Traffic blend 2023Q3-2024Q4           5.646  6        5     0.833
+                     rolling 6q sd, normal   Traffic blend     2025-2026           3.351  6        6     1.000
+rolling 6q sd, t5 with sd as scale (Price)   Traffic blend 2023Q3-2024Q4           6.502  6        5     0.833
+rolling 6q sd, t5 with sd as scale (Price)   Traffic blend     2025-2026           3.859  6        6     1.000
+rolling 6q sd, t5 rescaled to sd (Traffic) Price OOS blend 2023Q3-2024Q4           7.767  6        6     1.000
+rolling 6q sd, t5 rescaled to sd (Traffic) Price OOS blend     2025-2026           4.700  6        4     0.667
+                     rolling 6q sd, normal Price OOS blend 2023Q3-2024Q4           8.707  6        6     1.000
+                     rolling 6q sd, normal Price OOS blend     2025-2026           5.268  6        5     0.833
+rolling 6q sd, t5 with sd as scale (Price) Price OOS blend 2023Q3-2024Q4          10.028  6        6     1.000
+rolling 6q sd, t5 with sd as scale (Price) Price OOS blend     2025-2026           6.067  6        5     0.833
+rolling 6q sd, t5 rescaled to sd (Traffic)         Product 2023Q3-2024Q4           7.923  6        6     1.000
+rolling 6q sd, t5 rescaled to sd (Traffic)         Product     2025-2026           3.912  6        3     0.500
+                     rolling 6q sd, normal         Product 2023Q3-2024Q4           8.882  6        6     1.000
+                     rolling 6q sd, normal         Product     2025-2026           4.386  6        4     0.667
+rolling 6q sd, t5 with sd as scale (Price)         Product 2023Q3-2024Q4          10.228  6        6     1.000
+rolling 6q sd, t5 with sd as scale (Price)         Product     2025-2026           5.051  6        4     0.667
+
+    k = 1.143 (Traffic's rescaled t5), 1.282 (normal), 1.476 (Price's unscaled t5).
+    The roles describe the same distribution and implement it differently; Price's
+    convention makes its band 29% wider than Traffic's would be at the same sd.
+
+    Over all 14 post-COVID quarters, Traffic's +/-2.05% covers 50% of M1's errors and Price's +/-7.16% covers 93% of the blend's.
+    Traffic's band is sized on M1's calmest six-quarter stretch (rolling sd 1.67-3.33%
+    across post-COVID windows; the latest is the minimum). Price's uses the wider t.
+    One band is too narrow and the other too wide.
+
+(c) Harmonised rule for both halves: sd over 2023Q1-2026Q2 (n=14), t(13) rescaled:
+         series  n  sd_pct     k  half_width_pct  coverage_post_covid      lo80      hi80
+     Traffic M1 14   2.448 1.242           3.040                0.857 31911.544 33912.456
+  Traffic blend 14   2.887 1.242           3.586                0.643 31731.786 34092.214
+Price OOS blend 14   4.731 1.242           5.876                0.929   215.865   242.815
+        Product 14   3.979 1.242           4.942                0.857       NaN       NaN
+
+==============================================================================
+8. ERROR CORRELATION BETWEEN THE TWO HALVES
+==============================================================================
+       period traffic       price  n    rho  rho_lo80  rho_hi80  sd_pax  sd_fare  sd_product
+    2023-2024      M1 P_BLEND_oos  8 -0.205    -0.653     0.350   2.965    4.712       4.111
+    2023-2024 T_BLEND P_BLEND_oos  8 -0.553    -0.832    -0.049   3.708    4.712       4.111
+    2025-2026      M1 P_BLEND_oos  6 -0.756    -0.939    -0.242   1.673    4.911       4.034
+    2025-2026 T_BLEND P_BLEND_oos  6 -0.720    -0.929    -0.167   1.405    4.911       4.034
+2023Q1-2026Q2      M1 P_BLEND_oos 14 -0.379    -0.655    -0.012   2.448    4.731       3.979
+2023Q1-2026Q2 T_BLEND P_BLEND_oos 14 -0.553    -0.766    -0.232   2.887    4.731       3.979
+
+The halves share no input (TSA/T-100 vs BLS/EIA), yet their errors are NEGATIVELY
+correlated: rho -0.38 over 2023Q1-2026Q2, -0.76 in the current era.
+That is mechanical, not a coincidence. Southwest's fare is passenger revenue /
+revenue passengers, and the fare methods never see the passenger count. When the
+count comes in below forecast (Traffic over-forecasts), the same revenue is spread
+over fewer passengers and the fare comes in above forecast (Price under-forecasts).
+The 2026 trip-factor shift is exactly this: fewer revenue passengers, higher fare.
+
+Consequence for the product: errors that offset make it MORE accurate than the
+halves imply. Post-COVID, independence would give a product sd of 5.33%;
+the realised product sd was 3.98%. Integration should not combine the
+halves as independent. Recommended rho = -0.4 (the 14-quarter estimate, the more
+conservative of the two), with rho = 0 shown as the cautious bound.
+
+Traffic's own assumption, M1/M2 error correlation rho = 0.7:
+  2023-2024      M1 vs M2 (T-100 ASM proxy) +0.59   M1 vs M2 (actual ASM) +0.35
+  2025-2026      M1 vs M2 (T-100 ASM proxy) -0.00   M1 vs M2 (actual ASM) -0.13
+  2023Q1-2026Q2  M1 vs M2 (T-100 ASM proxy) +0.51   M1 vs M2 (actual ASM) +0.23
+  Realised: +0.2 to +0.6 before 2025, about zero since. 0.7 sits at or above every
+  window, so that part of Traffic's interval is conservative. The backtest-sd part
+  (section 7) is not, and it is the larger effect: the two do not cancel.
+
+==============================================================================
+9. BASELINES FOR Q3 2026
+==============================================================================
+                   target                     basis       B0       B1     team  team_lo80  team_hi80  team_vs_B0_pct  team_vs_B1_pct
+revenue passengers (000s)                  reported 34581.00 33435.67 32912.00   32237.00   33589.00           -4.83           -1.57
+         average fare ($) reported Q2 (packet's B1)   182.56   220.67   229.34     212.92     245.75           25.62            3.93
+         average fare ($)            ex-breakage Q2   182.56   228.78   229.34     212.92     245.75           25.63            0.24
+   passenger revenue ($M)               reported Q2  6313.00  7378.03  7548.04        NaN        NaN           19.56            2.30
+   passenger revenue ($M)            ex-breakage Q2  6313.00  7649.52  7548.04        NaN        NaN           19.56           -1.33
+
+B1 on the fare is $8 apart depending on the Q2 basis. The packet's $220.67 uses
+the reported Q2 fare, which carries the $285M one-off. Scored as 'beat B1', the
+team's fare looks 4% better than a naive forecast on the packet's basis and
+0.2% better on the ex-breakage basis. Only the second is a fair comparison.
+
+Scoring basis check, 2026Q2 Price OOS blend $242.53:
+  vs ex-breakage $233.90: +3.69%   vs reported $225.61: +7.50%
+  A one-off of that size in Q3 would double the fare error on its own.
+
+Q3 2026 cross-checks from this re-implementation:
+  M1 TSA chain                                   32,771k  (Traffic: 32,772k)
+  M2 at guided ASM midpoint (-0.5%)             33,165k  (Traffic: 33,171k)
+  M2 at July T-100 ASM YoY (-1.84%)             32,718k
+  M3 naive OLS, refitted on 2022Q1-2026Q2        32,097k  (Traffic: 32,097k)
+  P1 / P2 / P3   $227.16 / $229.02 / $230.79  (Price: $227.16 / $229.02 / $230.79)
+  M4 naive regression                         $210.60
+  Price blend weights for Q3 (all six current-era errors, no look-ahead for Q3 itself): P1 0.238, P2 0.330, P3 0.432
