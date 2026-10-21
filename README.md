@@ -29,11 +29,11 @@ on either target directly.
 | **Traffic** | Q3 passenger forecast + 80% interval | ✅ **32,912k, 80% CI 32,237–33,589 (−4.8% YoY)** |
 | **Price** | Q3 fare forecast + 80% interval | ✅ **$229.34, 80% CI $212.92–245.75 (+25.6% YoY)** |
 | **Evaluation** | Backtest table by period | ✅ **[2022Q1–2026Q2, both targets + product](Evaluation/README.md#3-the-backtest-table-by-period-the-deliverable)** |
-| Integration | Combined forecast, form, slides | ⬜ not started |
+| **Integration** | Combined forecast, form, slides | ✅ **[form values](Integration/outputs/form.md) · [5-slide deck](Integration/slides/southwest_q3_2026_readout.pptx) · product $7,548M, inside the guided band** |
 
-👉 **[`findings.md`](findings.md) is the shared findings document.** One section per role.
-Read the Traffic section before building the fare forecast — there is a
-[$285M breakage adjustment](findings.md#traffic) that changes the fare basis.
+👉 **[`findings.md`](findings.md) is the shared findings document.** One section per role, with the
+submitted numbers at the top. [`Integration/README.md`](Integration/README.md) explains how the two
+halves were combined and checked against guidance.
 
 ## Why this company is a useful test
 
@@ -65,7 +65,13 @@ assigned seating from Jan 2026), a fuel shock, and two federal funding lapses.
 │   ├── README.md               backtest table by period, audit, calibration, PoV
 │   ├── evaluation.py           re-implements both roles' methods and backtests them
 │   └── outputs/                backtest by quarter and period, DM tests, intervals, charts
-└── Integration/                (to be added)
+└── Integration/                Integration role (complete)
+    ├── README.md               combination, guidance check, market benchmark, form, slides
+    ├── integrate.py            form values, product interval, guidance check, post-print scorecard
+    ├── build_deck.py           generates the deck from the outputs
+    ├── actuals.json            reported Q3 figures: null until the print
+    ├── slides/                 the five-slide readout deck (.pptx)
+    └── outputs/                form, guidance check, sensitivity, summary JSON, run log
 ```
 
 ## Data provided
@@ -85,15 +91,18 @@ the form closes enters the model.
 ## Reproducing the analysis
 
 ```bash
-python3 -m venv .venv && .venv/bin/pip install pandas numpy matplotlib statsmodels
+python3 -m venv .venv && .venv/bin/pip install pandas numpy matplotlib statsmodels python-pptx
 .venv/bin/python Traffic/traffic_forecast.py
 .venv/bin/python Price/price_forecast.py
 .venv/bin/python Evaluation/evaluation.py
+.venv/bin/python Integration/integrate.py
+.venv/bin/python Integration/build_deck.py
 ```
 
 Each prints its full analysis log and refreshes its own `outputs/`. The runs are deterministic
 (seeded Monte Carlo), so the committed outputs should reproduce exactly. Evaluation reads the two
-roles' committed `forecast.csv` and `backtest.csv`, so run it last.
+roles' committed `forecast.csv` and `backtest.csv`, and Integration reads Evaluation's outputs,
+so run them in this order. After the print, fill `Integration/actuals.json` and re-run the last two.
 
 ## Key dates
 

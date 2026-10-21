@@ -1,0 +1,3 @@
+band,lo,hi,team,inside,position_in_band,p_inside,fare_implied_lo,fare_implied_hi,pax_implied_lo,pax_implied_hi
+"packet, 92% share",7436.7155,7639.6949,7548.0381,True,0.5484,0.2559,225.9576,232.1249,32426.596,33311.6546
+"seasonal, 91.48% share",7394.6358,7596.4666,7548.0381,True,0.7601,0.2529,224.679,230.8115,32243.1142,33123.1648

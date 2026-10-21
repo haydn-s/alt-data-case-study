@@ -10,14 +10,18 @@ Keep method detail in the role's own folder and keep this document to findings.
 
 ## Team forecast
 
+**As submitted on the form** (points from the roles; intervals on Evaluation's harmonised rule; see
+[Integration](#integration)):
+
 | Figure | Point | 80% interval | Owner | Status |
 |---|---|---|---|---|
-| Revenue passengers carried (000s) | **32,912** | **32,237 – 33,589** | Traffic | ✅ done |
-| Average passenger fare ($) | — | — | Price | ⬜ pending |
-| **Implied passenger revenue** | — | — | Integration | ⬜ blocked on Price |
+| Revenue passengers carried (000s) | **32,912** | **31,912 – 33,912** | Traffic | ✅ done |
+| Average passenger fare ($) | **$229.34** | **$215.87 – $242.81** | Price | ✅ done |
+| **Implied passenger revenue ($M)** | **7,548** | **7,136 – 7,955** | Integration | ✅ inside the guided band |
 
 Baselines to beat: **B0** = Q3 2025 (34,581 passengers / $182.56 fare); **B1** = Q3 2025 scaled
-by the Q2 2026 YoY change (33,436 passengers / $220.67 fare).
+by the Q2 2026 YoY change (33,436 passengers / $220.67 fare; **$228.78** rebuilt ex-breakage —
+see [Evaluation E2](#e2-on-a-fair-basis-the-fare-forecast-is-the-naive-forecast)).
 
 > ⚠️ **Cross-role dependency — read before multiplying.** Q2 2026's reported fare of $225.61 is
 > depressed by a one-off $285M breakage reversal. Ex-breakage it was **$233.90** (+25.3% YoY, not
@@ -204,11 +208,25 @@ does not — and Q2 2026 is the proof.
 
 ## Price
 
-⬜ *Not started. Owner to complete.*
+**Deliverable: Q3 2026 average passenger fare = $229.34, 80% interval $212.92 – $245.75, +25.6% YoY.**
+Full method and code: [`Price/README.md`](Price/README.md).
 
-Hand-off from Traffic that matters here:
-- Q2 2026 reported fare $225.61 is **after** a $285M breakage reversal; ex-breakage it is **$233.90** (+25.3% YoY). Decide and document which basis the forecast uses.
-- Our passenger point of 32,912 implies the guided band is satisfied at a fare of **$225.75–$232.13** (+23.7% to +27.2% YoY). That is a slight *deceleration* from Q2's underlying pace, consistent with the RASM guide (+17.5–19.5% vs +20.1% underlying in Q2).
+*The Price work was merged without filling in this section. Integration summarised it here from
+Price's README; the Price owner should check it.*
+
+- **Basis: ex-breakage.** The Q2 2026 fare is recomputed with the $285M added back ($233.90), as
+  Traffic flagged. Using the reported $225.61 would cost ~$10 on the forecast (P1 → $219.11).
+- **Three methods on three different signals, all within 1.6% of each other:** P1 industry anchor
+  (BLS CPI + last quarter's premium) $227.16; P2 seasonal step $229.02; P3 fuel pass-through $230.79.
+  They are blended 0.24/0.33/0.43 on current-era inverse MSE, shrunk halfway to equal.
+- **Southwest now moves 1-for-1 with the industry index.** The naive regression (M4) fits a slope of
+  ~0.35 on 2022–25, then misses 2026Q1/Q2 by −7%/−9%. That fits the hedges ending in Q2 2025: the
+  2026 fuel shock reached Southwest's fares the way it reached everyone's.
+- **Attribution of the Q2 2026 rise (ex-breakage):** industry CPI explains almost all of it, and
+  Southwest's own premium is +0.5 pt. That does not support management's claim that its own
+  initiatives explain most of the gain. About 56% of the dollar increase matches higher fuel cost per
+  passenger, and about a fifth of the % increase is longer trips (the itinerary shift Traffic found).
+- **PoV:** sellable as attribution, less so as a point forecast; Evaluation's backtest agrees (E1, E2).
 
 ---
 
@@ -291,8 +309,47 @@ four quarters; (3) M1 and M3 diverge by more than 2%, which is **already raised 
 
 ## Integration
 
-⬜ *Not started. Owner to complete.*
+**Deliverable: the form values (top of this document), the guidance check, and the five-slide deck
+[`Integration/slides/southwest_q3_2026_readout.pptx`](Integration/slides/southwest_q3_2026_readout.pptx).**
+Full method and code: [`Integration/README.md`](Integration/README.md).
 
-- Passenger revenue check: guidance implies ~$8.08–8.30bn operating revenue and passenger revenue was ~92% of that in Q2 2026, so ~$7.43–7.64bn.
-- At our 32,912 passengers, the band is cleared for fares of roughly **$225–232**.
-- Passenger counts the band implies at other fares: $215 → 34,558–35,535; $220 → 33,773–34,727; $226 → 32,876–33,805; $232 → 32,026–32,931.
+### I1. The product is $7,548M and sits inside the guided band — on either share assumption
+
+Guidance (RASM +17.5–19.5%, ASMs −1% to flat) implies operating revenue of $8,083–8,304M.
+
+| Passenger share | Band | Team $7,548M |
+|---|---|---|
+| Packet's flat 92% (a Q2 number) | $7,437 – 7,640M | inside, 55% up |
+| Seasonal 91.48% (Q3 runs lower) | $7,395 – 7,596M | inside, 76% up |
+
+Implied RASM is **+19.3% YoY**, in the upper part of the +17.5–19.5% guide. **But only 25% of our own
+product distribution falls inside the band**, so landing in it is a consistency check, not evidence.
+
+### I2. One change from the roles' handoffs: the intervals
+
+Points are the roles' own. The intervals follow Evaluation's harmonised rule (E3), because the
+delivered bands covered 50% (passengers) and 93% (fare) of post-COVID quarters. The product interval
+uses **ρ = −0.4** between the halves' errors (E4): **$7,136 – 7,955M** (±5.4%). Assuming
+independence would give ±6.6%.
+
+### I3. The split says yield, and both naive forecasts miss the band
+
+The band admits flat passengers at $214–220 *or* −4.8% passengers at $225–231. Our split says the
+second. The packet's B1 (33,436k × $220.67 = $7,378M) lands **below** the band. B1 rebuilt
+ex-breakage (× $228.78 = $7,649M) lands **above** it. The split also says which half to suspect if
+revenue misses: the fare, which has no demonstrated edge over naive.
+
+### I4. The market agrees on the centre and is more confident
+
+Kalshi's Q3 fare contracts on Oct 20, ~9:30pm ET: P(> $225) 77%, P(> $230) 50%, P(> $235) 19%. That
+gives a median of **$229.71** against our $229.34, and an 80% band of $221.81–237.62 against our
+$215.87–242.81. Benchmark only; it does not enter the forecast.
+
+### I5. What is not submitted, and what happens after the print
+
+- **Share price (optional): left blank.** With no demonstrated edge on revenue we have no informed view
+  on the reaction. Random-walk would be the honest entry.
+- **After the print:** fill `Integration/actuals.json` (including **enplaned passengers**) and re-run
+  `integrate.py` and `build_deck.py`. Slide 5 then becomes the scorecard, with the passenger miss split
+  exactly into a boardings error and a trip-factor error. That split is the test of F1/F2: whether the
+  alternative data or the accounting bridge failed.

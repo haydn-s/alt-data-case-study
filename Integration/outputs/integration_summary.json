@@ -1,0 +1,110 @@
+{
+  "form": {
+    "revenue_passengers_000": {
+      "point": 32912,
+      "lo80": 31912,
+      "hi80": 33912
+    },
+    "avg_passenger_fare_usd": {
+      "point": 229.34,
+      "lo80": 215.87,
+      "hi80": 242.81
+    },
+    "implied_passenger_revenue_musd": {
+      "point": 7548,
+      "lo80": 7136,
+      "hi80": 7955
+    },
+    "share_price_oct22_close_usd": null
+  },
+  "pax": {
+    "point": 32912.0,
+    "lo80": 31911.5439,
+    "hi80": 33912.4561,
+    "sd_pct": 2.4475,
+    "delivered_lo80": 32237.0,
+    "delivered_hi80": 33589.0,
+    "yoy_pct": -4.83,
+    "trip_factor": 1.3098,
+    "M1": 32772.0,
+    "M2": 33171.0,
+    "M3": 32097.0
+  },
+  "fare": {
+    "point": 229.34,
+    "lo80": 215.865,
+    "hi80": 242.815,
+    "sd_pct": 4.7308,
+    "delivered_lo80": 212.92,
+    "delivered_hi80": 245.75,
+    "yoy_pct": 25.63,
+    "P1": 227.16,
+    "P2": 229.02,
+    "P3": 230.79
+  },
+  "revenue": {
+    "point": 7548.03808,
+    "lo80": 7135.853232655937,
+    "hi80": 7954.765065425673,
+    "rho": -0.4
+  },
+  "guidance": {
+    "oprev_lo": 8083.386444375001,
+    "oprev_hi": 8304.0161625,
+    "share_seasonal": 0.9147942959938093,
+    "band_92_lo": 7436.7155288250015,
+    "band_92_hi": 7639.6948695,
+    "band_seasonal_lo": 7394.635811627931,
+    "band_seasonal_hi": 7596.466619295402,
+    "p_inside_seasonal": 0.2529175
+  },
+  "baselines": [
+    {
+      "name": "Team",
+      "pax": 32912.0,
+      "fare": 229.34,
+      "revenue": 7548.03808,
+      "vs_seasonal_band": "inside",
+      "vs_92pct_band": "inside"
+    },
+    {
+      "name": "B0 same quarter last year",
+      "pax": 34581.0,
+      "fare": 182.56,
+      "revenue": 6313.10736,
+      "vs_seasonal_band": "below",
+      "vs_92pct_band": "below"
+    },
+    {
+      "name": "B1 packet (reported Q2 basis)",
+      "pax": 33435.67,
+      "fare": 220.67,
+      "revenue": 7378.249298899999,
+      "vs_seasonal_band": "below",
+      "vs_92pct_band": "below"
+    },
+    {
+      "name": "B1 ex-breakage Q2 basis",
+      "pax": 33435.67,
+      "fare": 228.78,
+      "revenue": 7649.412582599999,
+      "vs_seasonal_band": "above",
+      "vs_92pct_band": "above"
+    }
+  ],
+  "kalshi": {
+    "retrieved": "2026-10-20 ~21:30 ET",
+    "url": "https://kalshi.com/markets/kxluv/southwest-airlines-kpi/kxluv-26octfare",
+    "p_above": {
+      "225": 0.77,
+      "230": 0.5,
+      "235": 0.19
+    },
+    "median": 229.71401880918756,
+    "sd": 6.170061067801854,
+    "lo80": 221.8067673882403,
+    "hi80": 237.62127023013483
+  },
+  "actuals": null,
+  "decomposition": null
+}

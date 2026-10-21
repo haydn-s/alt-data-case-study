@@ -1,0 +1,5 @@
+name,pax,fare,revenue,vs_seasonal_band,vs_92pct_band
+Team,32912.0,229.34,7548.04,inside,inside
+B0 same quarter last year,34581.0,182.56,6313.11,below,below
+B1 packet (reported Q2 basis),33435.67,220.67,7378.25,below,below
+B1 ex-breakage Q2 basis,33435.67,228.78,7649.41,above,above

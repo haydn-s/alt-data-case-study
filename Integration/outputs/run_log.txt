@@ -1,0 +1,90 @@
+
+==============================================================================
+1. COMBINE THE TWO FORECASTS
+==============================================================================
+Revenue passengers  point 32,912k   80% 31,912 - 33,912   (Traffic delivered 32,237 - 33,589)
+Average fare        point $229.34   80% $215.87 - $242.81   (Price delivered $212.92 - $245.75)
+Points are the roles' own. Intervals are Evaluation's harmonised 80% rule: error sd
+over the 14 post-COVID backtest quarters, Student-t on 13 df rescaled to that sd.
+  passengers sd 2.45%  ->  +/-3.04%
+  fare       sd 4.73%  ->  +/-5.88%
+
+==============================================================================
+2. PASSENGER REVENUE = PASSENGERS x FARE
+==============================================================================
+Point: 32,912k x $229.34 = $7,548M
+80% interval (rho = -0.4): $7,136M - $7,955M   (+/-5.4%)
+
+Product interval sensitivity:
+                                 variant   lo80   hi80  half_width_pct
+           harmonised, rho -0.4 [CHOSEN] 7134.4 7953.7             5.4
+         harmonised, rho 0 (independent) 7050.2 8052.6             6.6
+harmonised, rho -0.76 (current era only) 7231.8 7846.9             4.1
+          roles' delivered widths, rho 0 6988.0 8111.6             7.4
+Cross-check: the product's own backtest errors (n=14) give +/-4.9%, consistent with rho -0.4
+and tighter than independence. The offset is mechanical: the fare is revenue /
+passengers, so a passenger shortfall shows up as a fare overshoot (Evaluation E4/E9).
+
+==============================================================================
+3. CHECK AGAINST GUIDANCE
+==============================================================================
+Q3 2025 RASM 15.25c x (1 + 17.5..19.5%) = 17.92-18.22c
+Q3 2025 ASMs 45,567M x (1 -1..+0%) = 45,111-45,567M
+Operating revenue implied by guidance: $8,083M - $8,304M
+
+                  band       lo       hi     team  inside  position_in_band  p_inside  fare_implied_lo  fare_implied_hi  pax_implied_lo  pax_implied_hi
+     packet, 92% share 7436.716 7639.695 7548.038    True             0.548     0.256          225.958          232.125       32426.596       33311.655
+seasonal, 91.48% share 7394.636 7596.467 7548.038    True             0.760     0.253          224.679          230.811       32243.114       33123.165
+
+The team's $7,548M is INSIDE both bands. Read backwards: at our passenger count
+the band needs a fare of $224.68-$230.81 (seasonal); at our fare it needs 32,243-33,123k passengers.
+Only 25% of our product distribution falls inside the seasonal band:
+the guidance band is much narrower than our uncertainty about the product.
+Implied RASM at 92% share and mid-guide ASMs: 18.10c, +18.7% YoY (guide +17.5% to +19.5%)
+Implied RASM at seasonal share and mid-guide ASMs: 18.20c, +19.3% YoY (guide +17.5% to +19.5%)
+
+==============================================================================
+4. THE SPLIT: WHERE THE BASELINES LAND AGAINST THE BAND
+==============================================================================
+                         name      pax   fare  revenue vs_seasonal_band vs_92pct_band
+                         Team 32912.00 229.34  7548.04           inside        inside
+    B0 same quarter last year 34581.00 182.56  6313.11            below         below
+B1 packet (reported Q2 basis) 33435.67 220.67  7378.25            below         below
+      B1 ex-breakage Q2 basis 33435.67 228.78  7649.41            above         above
+
+Neither naive forecast lands in the band. B1 on the packet's basis is BELOW it
+(it carries the $285M one-off into the fare); B1 rebuilt ex-breakage is ABOVE it
+(it carries Q2's passenger decline but not the slower Q3 fare growth management
+guided to). The band admits flat passengers at $214-220 or -4.8% passengers at $225-231:
+a volume story and a yield story. Our split says it is the yield story, and it says
+which half to blame if the print misses: the passenger count has the evidence
+behind it (Evaluation E1), the fare does not.
+
+==============================================================================
+5. MARKET BENCHMARK: KALSHI Q3 FARE CONTRACTS
+==============================================================================
+Retrieved 2026-10-20 ~21:30 ET from https://kalshi.com/markets/kxluv/southwest-airlines-kpi/kxluv-26octfare
+  P(fare > $225) = 77%
+  P(fare > $230) = 50%
+  P(fare > $235) = 19%
+Normal fitted to the three prices: median $229.71, sd $6.17, 80% $221.81 - $237.62
+Ours: $229.34, 80% $215.87 - $242.81.
+Our implied P(fare > threshold): $225: 66%, $230: 47%, $235: 29%
+The market and the model agree on the centre to within a dollar. The market is
+1.7x more confident. Our band is sized on what our method's backtest
+errors were, and a one-off item in the print (Evaluation E7) is a real tail the
+market may be under-pricing.
+
+==============================================================================
+6. FORECAST FORM -- one submission per team, closes Oct 21 12:00 noon ET
+==============================================================================
+  Revenue passengers (000s)      32,912   80%: 31,912 - 33,912
+  Average passenger fare ($)     229.34   80%: 215.87 - 242.81
+  Implied passenger revenue ($M) 7,548   80%: 7,136 - 7,955
+  Share price, Oct 22 close      not submitted (optional) -- see README §6
+
+==============================================================================
+7. SCORECARD AGAINST THE PRINT
+==============================================================================
+actuals.json has no reported figures yet (Southwest reports Oct 21 after the close).
+Fill it from the Q3 2026 release and re-run this script and build_deck.py.
