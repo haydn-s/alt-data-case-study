@@ -1,0 +1,116 @@
+
+==============================================================================
+1. LOAD AND CLEAN
+==============================================================================
+Southwest rows: 30  (2019Q1 .. 2026Q2)
+Q2 2026 fare reported $225.61  -> ex-breakage $233.90
+Q4 2024 also carries a $116M breakage item; left as reported (direction not
+stated in the file). It touches only the 2025Q4 base of the backtest.
+CPI months: 105, missing: 1 ['2025-10'] -> linear interpolation (256.476)
+Jet fuel weekdays: 2022, blank (holidays) dropped: 87
+
+Quarterly panel (YoY in log %; fare ex-breakage):
+          fare  fare_yoy  cpi_yoy    gap  haul_yoy  yield_yoy  spot  fuel_px
+2023Q1  168.87      6.11    20.74 -14.64     -4.02      10.13  2.99     3.19
+2023Q2  179.45     -2.60   -12.27   9.67      1.54      -4.14  2.26     2.60
+2023Q3  167.25      2.57   -16.50  19.06      3.42      -0.86  2.87     2.80
+2023Q4  172.61      2.45   -12.36  14.81      3.85      -1.39  2.67     3.01
+2024Q1  173.76      2.86    -6.78   9.64      2.94      -0.08  2.62     2.92
+2024Q2  178.94     -0.28    -5.76   5.47      2.47      -2.75  2.46     2.76
+2024Q3  175.98      5.09    -0.86   5.95      2.60       2.49  2.20     2.52
+2024Q4  184.82      6.83     5.38   1.45      2.13       4.70  2.08     2.38
+2025Q1  193.76     10.89     0.26  10.64      1.46       9.44  2.22     2.49
+2025Q2  186.64      4.21    -6.48  10.70      1.93       2.28  2.00     2.32
+2025Q3  182.56      3.67     2.35   1.32      1.65       2.02  2.12     2.40
+2025Q4  199.37      7.58    -4.19  11.77      3.40       4.18  2.12     2.45
+2026Q1  225.91     15.35     7.65   7.70      4.45      10.91  2.70     2.73
+2026Q2  233.90     22.57    22.05   0.53      4.61      17.96  3.63     3.92
+2026Q3     NaN       NaN    21.33    NaN       NaN        NaN  3.83      NaN
+
+==============================================================================
+3. BACKTEST 2023Q1 - 2026Q2 (vintage-consistent)
+==============================================================================
+Quarter-by-quarter error (forecast / actual - 1, %):
+         P1_err%  P2_err%  P3_err%  BLEND_err%  M4_err%  B0_err%  B1_err%
+quarter                                                                  
+2023Q1      -7.3     -1.9     -3.1        -3.7     25.1     -5.9      2.3
+2023Q2     -21.6     -4.4     -9.0       -10.5    -24.8      2.6      9.1
+2023Q3      -9.0     -1.9     -1.9        -3.6     -7.9     -2.5     -5.0
+2023Q4       4.3     -0.9      1.1         1.2     -2.2     -2.4      0.1
+2024Q1       5.3      1.0     -1.7         0.9     -0.0     -2.8     -0.4
+2024Q2       4.3      1.6      6.2         4.2      3.5      0.3      3.2
+2024Q3      -0.5     -4.9    -10.2        -6.1     -0.7     -5.0     -5.2
+2024Q4       4.6     -0.2     -4.8        -1.0     -0.2     -6.6     -1.7
+2025Q1      -8.8     -5.0     -2.2        -4.7     -5.9    -10.3     -4.0
+2025Q2      -0.1      5.9      6.4         4.7     -1.1     -4.1      6.9
+2025Q3       9.8      0.2      3.6         4.0      2.5     -3.6      0.5
+2025Q4      -9.9     -6.1     -2.8        -5.6     -3.7     -7.3     -3.8
+2026Q1       4.1     -7.0     -4.4        -3.2     -7.1    -14.2     -7.5
+2026Q2       7.4      2.2      2.7         3.7     -8.8    -20.2     -7.0
+
+MAPE by era (%):
+                                 n  P1_MAPE  P2_MAPE  P3_MAPE  BLEND_MAPE  M4_MAPE  B0_MAPE  B1_MAPE
+era                                                                                                 
+2023-2024 (pre fee change)       8     7.10     2.09     4.74        3.90     8.06     3.52     3.39
+2025-2026 (fee + model change)   6     6.70     4.41     3.67        4.30     4.86     9.96     4.95
+full sample                     14     6.93     3.09     4.28        4.07     6.69     6.28     4.06
+
+Blend weights (current-era inverse MSE, shrunk 50% toward equal):
+  P1: raw 0.14 -> used 0.24   (current-era RMSE 7.58%)
+  P2: raw 0.33 -> used 0.33   (current-era RMSE 5.02%)
+  P3: raw 0.53 -> used 0.43   (current-era RMSE 3.94%)
+Note: the BLEND row uses weights fitted on 2025-26, so its current-era MAPE is
+in-sample. P1/P2/P3, M4 and the baselines are fully out-of-sample.
+
+M4 (fare YoY ~ CPI YoY) fits a slope of only ~0.35 on 2022-25 and then misses
+2026Q1 and 2026Q2 by -7% and -9%: Southwest now moves ~1:1 with the industry.
+Consistent with the timeline: Southwest ended its fuel hedges in Q2 2025, so the
+2026 fuel shock reached its fares the same way it reached everyone else's.
+This is why P1 carries the premium with an implied slope of 1, not 0.35.
+
+==============================================================================
+4. Q3 2026 FORECAST
+==============================================================================
+Q3 2026 CPI YoY +21.33% (log)   Q2 premium carried by P1 +0.53pp
+Q3 fuel: EIA spot $3.832 + recent premium -> $4.063/gal   (company guided $3.70-3.75)
+
+  P1: $227.16   (+24.4% YoY)
+  P2: $229.02   (+25.5% YoY)
+  P3: $230.79   (+26.4% YoY)
+  BLEND: $229.34   (+25.6% YoY)
+  P2 fit: Q3 season -1.00%, beta 0.42  (beta<1: SW swings less than CPI)
+  M4 naive regression (benchmark, not blended): $210.60
+  B0 $182.56   B1 $228.78  (B1 on ex-breakage basis; packet's B1 is $220.67)
+
+Sensitivity:
+  P1 with CPI lagged 1 month               $237.02
+  P3 at guided fuel $3.725                 $225.25
+  P1 on reported (not ex-breakage) Q2      $219.11
+
+Interval: backtest sd 4.79% , method spread sd 0.79% -> combined 4.85%, Student-t df=5, 200k draws
+POINT $229.34   80% INTERVAL $212.92 - $245.75
+
+==============================================================================
+5. GUIDANCE CROSS-CHECK
+==============================================================================
+Passenger share of op revenue: Q2'26 0.9212, Q3'25 0.9085 -> Q3'26 est 0.9148
+Passenger revenue band at packet's 92%     : $7,434M - $7,636M
+Passenger revenue band at seasonal share   : $7,392M - $7,593M
+  fare the band implies at Traffic's 32,912k pax (92%): $225.86 - $232.01
+  fare the band implies at Traffic's 32,912k pax (seasonal): $224.58 - $230.70
+Team product: $229.34 x 32,912k = $7,548M passenger revenue
+  inside 92% band? True   inside seasonal band? True
+
+==============================================================================
+6. ATTRIBUTION OF THE FARE JUMP -- three lenses
+==============================================================================
+                   fare_change_$  fare_yoy_%  A_industry_cpi_%  A_southwest_own_%  B_fuel_cost_per_pax_$  B_non_fuel_$  C_longer_trips_%  C_price_per_mile_%
+quarter                                                                                                                                                     
+2026Q1                     32.15       15.35              7.65               7.70                   4.08         28.07              4.45               10.91
+2026Q2                     47.26       22.57             22.05               0.53                  26.29         20.97              4.61               17.96
+2026Q3 (forecast)          46.79       22.82             21.33               1.48                  27.26         19.52              4.29               18.53
+
+Reading: in Q2 2026 (ex-breakage) the BLS index explains almost all of the
+fare increase -- Southwest's own premium over the industry is under 1 point.
+About half the dollar increase matches the rise in fuel cost per passenger,
+and a fifth of the % increase is just longer trips (more connections), not price.
