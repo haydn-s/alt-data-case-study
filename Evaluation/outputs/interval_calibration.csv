@@ -1,0 +1,33 @@
+check,series,period,half_width_pct,n,covered,coverage
+delivered half-width,Traffic (blend),2023-2024,2.054,8,3,0.375
+delivered half-width,Traffic (blend),2025-2026,2.054,6,5,0.8333
+delivered half-width,Traffic (M1),2023-2024,2.054,8,2,0.25
+delivered half-width,Traffic (M1),2025-2026,2.054,6,5,0.8333
+delivered half-width,Price (OOS blend),2023-2024,7.1575,8,7,0.875
+delivered half-width,Price (OOS blend),2025-2026,7.1575,6,6,1.0
+delivered half-width,Price (in-sample blend),2023-2024,7.1575,8,7,0.875
+delivered half-width,Price (in-sample blend),2025-2026,7.1575,6,6,1.0
+"rolling 6q sd, t5 rescaled to sd (Traffic)",Traffic M1,2023Q3-2024Q4,4.3078,6,5,0.8333
+"rolling 6q sd, t5 rescaled to sd (Traffic)",Traffic M1,2025-2026,2.6921,6,6,1.0
+"rolling 6q sd, normal",Traffic M1,2023Q3-2024Q4,4.8291,6,6,1.0
+"rolling 6q sd, normal",Traffic M1,2025-2026,3.0178,6,6,1.0
+"rolling 6q sd, t5 with sd as scale (Price)",Traffic M1,2023Q3-2024Q4,5.5614,6,6,1.0
+"rolling 6q sd, t5 with sd as scale (Price)",Traffic M1,2025-2026,3.4754,6,6,1.0
+"rolling 6q sd, t5 rescaled to sd (Traffic)",Traffic blend,2023Q3-2024Q4,5.0367,6,5,0.8333
+"rolling 6q sd, t5 rescaled to sd (Traffic)",Traffic blend,2025-2026,2.9891,6,6,1.0
+"rolling 6q sd, normal",Traffic blend,2023Q3-2024Q4,5.6462,6,5,0.8333
+"rolling 6q sd, normal",Traffic blend,2025-2026,3.3508,6,6,1.0
+"rolling 6q sd, t5 with sd as scale (Price)",Traffic blend,2023Q3-2024Q4,6.5024,6,5,0.8333
+"rolling 6q sd, t5 with sd as scale (Price)",Traffic blend,2025-2026,3.8589,6,6,1.0
+"rolling 6q sd, t5 rescaled to sd (Traffic)",Price OOS blend,2023Q3-2024Q4,7.7673,6,6,1.0
+"rolling 6q sd, t5 rescaled to sd (Traffic)",Price OOS blend,2025-2026,4.6996,6,4,0.6667
+"rolling 6q sd, normal",Price OOS blend,2023Q3-2024Q4,8.7072,6,6,1.0
+"rolling 6q sd, normal",Price OOS blend,2025-2026,5.2682,6,5,0.8333
+"rolling 6q sd, t5 with sd as scale (Price)",Price OOS blend,2023Q3-2024Q4,10.0276,6,6,1.0
+"rolling 6q sd, t5 with sd as scale (Price)",Price OOS blend,2025-2026,6.0671,6,5,0.8333
+"rolling 6q sd, t5 rescaled to sd (Traffic)",Product,2023Q3-2024Q4,7.9229,6,6,1.0
+"rolling 6q sd, t5 rescaled to sd (Traffic)",Product,2025-2026,3.9122,6,3,0.5
+"rolling 6q sd, normal",Product,2023Q3-2024Q4,8.8817,6,6,1.0
+"rolling 6q sd, normal",Product,2025-2026,4.3856,6,4,0.6667
+"rolling 6q sd, t5 with sd as scale (Price)",Product,2023Q3-2024Q4,10.2285,6,6,1.0
+"rolling 6q sd, t5 with sd as scale (Price)",Product,2025-2026,5.0507,6,4,0.6667

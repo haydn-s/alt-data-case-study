@@ -27,8 +27,8 @@ on either target directly.
 | Role | Deliverable | Status |
 |---|---|---|
 | **Traffic** | Q3 passenger forecast + 80% interval | ✅ **32,912k, 80% CI 32,237–33,589 (−4.8% YoY)** |
-| Price | Q3 fare forecast + 80% interval | ⬜ not started |
-| Evaluation | Backtest table by period | ⬜ not started |
+| **Price** | Q3 fare forecast + 80% interval | ✅ **$229.34, 80% CI $212.92–245.75 (+25.6% YoY)** |
+| **Evaluation** | Backtest table by period | ✅ **[2022Q1–2026Q2, both targets + product](Evaluation/README.md#3-the-backtest-table-by-period-the-deliverable)** |
 | Integration | Combined forecast, form, slides | ⬜ not started |
 
 👉 **[`findings.md`](findings.md) is the shared findings document.** One section per role.
@@ -57,8 +57,14 @@ assigned seating from Jan 2026), a fuel shock, and two federal funding lapses.
 │   ├── README.md               method, cleaning decisions, backtest, PoV
 │   ├── traffic_forecast.py     reproducible pipeline
 │   └── outputs/                forecast, panels, backtest, charts, run log
-├── Price/                      (to be added)
-├── Evaluation/                 (to be added)
+├── Price/                      Price role (complete)
+│   ├── README.md               method, cleaning decisions, backtest, attribution, PoV
+│   ├── price_forecast.py       reproducible pipeline
+│   └── outputs/                forecast, panel, backtest, attribution, charts, run log
+├── Evaluation/                 Evaluation role (complete)
+│   ├── README.md               backtest table by period, audit, calibration, PoV
+│   ├── evaluation.py           re-implements both roles' methods and backtests them
+│   └── outputs/                backtest by quarter and period, DM tests, intervals, charts
 └── Integration/                (to be added)
 ```
 
@@ -76,15 +82,18 @@ assigned seating from Jan 2026), a fuel shock, and two federal funding lapses.
 Any other free public source is permitted, provided it is disclosed and nothing published after
 the form closes enters the model.
 
-## Reproducing the Traffic analysis
+## Reproducing the analysis
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install pandas numpy matplotlib statsmodels
 .venv/bin/python Traffic/traffic_forecast.py
+.venv/bin/python Price/price_forecast.py
+.venv/bin/python Evaluation/evaluation.py
 ```
 
-Prints the full analysis log and refreshes everything in `Traffic/outputs/`. The run is
-deterministic (seeded Monte Carlo), so the committed outputs should reproduce exactly.
+Each prints its full analysis log and refreshes its own `outputs/`. The runs are deterministic
+(seeded Monte Carlo), so the committed outputs should reproduce exactly. Evaluation reads the two
+roles' committed `forecast.csv` and `backtest.csv`, so run it last.
 
 ## Key dates
 

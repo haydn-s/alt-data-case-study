@@ -1,0 +1,6 @@
+target,basis,B0,B1,team,team_lo80,team_hi80,team_vs_B0_pct,team_vs_B1_pct
+revenue passengers (000s),reported,34581.0,33435.67,32912.0,32237.0,33589.0,-4.83,-1.57
+average fare ($),reported Q2 (packet's B1),182.56,220.67,229.34,212.92,245.75,25.62,3.93
+average fare ($),ex-breakage Q2,182.56,228.78,229.34,212.92,245.75,25.63,0.24
+passenger revenue ($M),reported Q2,6313.0,7378.03,7548.04,,,19.56,2.3
+passenger revenue ($M),ex-breakage Q2,6313.0,7649.52,7548.04,,,19.56,-1.33

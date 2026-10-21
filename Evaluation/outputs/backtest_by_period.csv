@@ -1,0 +1,99 @@
+target,period,method,n,MAPE,bias,RMSE,sd,beats_B1
+revenue_passengers,2022-2024 (pre fee change),M1,12,3.808,2.186,5.09,4.802,11/12
+revenue_passengers,2022-2024 (pre fee change),M2,12,7.959,5.472,10.484,9.341,7/12
+revenue_passengers,2022-2024 (pre fee change),M2_oracle,12,6.113,4.234,8.527,7.73,9/12
+revenue_passengers,2022-2024 (pre fee change),T_BLEND,12,4.818,3.336,6.78,6.165,9/12
+revenue_passengers,2022-2024 (pre fee change),M3,8,2.653,0.417,3.202,3.394,6/8
+revenue_passengers,2022-2024 (pre fee change),pax_B0,12,11.903,-10.996,16.537,12.9,5/12
+revenue_passengers,2022-2024 (pre fee change),pax_B1,12,10.29,8.644,16.024,14.093,0/12
+revenue_passengers,  of which 2022 (COVID base),M1,4,6.377,5.671,7.872,6.304,4/4
+revenue_passengers,  of which 2022 (COVID base),M2,4,12.886,12.886,15.887,10.731,3/4
+revenue_passengers,  of which 2022 (COVID base),M2_oracle,4,10.189,10.189,13.209,9.706,4/4
+revenue_passengers,  of which 2022 (COVID base),T_BLEND,4,8.196,8.196,10.592,7.748,4/4
+revenue_passengers,  of which 2022 (COVID base),pax_B0,4,23.019,-23.019,26.657,15.523,1/4
+revenue_passengers,  of which 2022 (COVID base),pax_B1,4,21.563,21.563,26.805,18.387,0/4
+revenue_passengers,  of which 2023-2024,M1,8,2.523,0.443,2.808,2.965,7/8
+revenue_passengers,  of which 2023-2024,M2,8,5.495,1.765,6.219,6.375,4/8
+revenue_passengers,  of which 2023-2024,M2_oracle,8,4.075,1.257,4.671,4.81,5/8
+revenue_passengers,  of which 2023-2024,T_BLEND,8,3.129,0.906,3.585,3.708,5/8
+revenue_passengers,  of which 2023-2024,M3,8,2.653,0.417,3.202,3.394,6/8
+revenue_passengers,  of which 2023-2024,pax_B0,8,6.345,-4.985,7.41,5.861,4/8
+revenue_passengers,  of which 2023-2024,pax_B1,8,4.653,2.184,5.089,4.914,0/8
+revenue_passengers,2025-2026 (fee + model change),M1,6,1.497,-0.386,1.575,1.673,5/6
+revenue_passengers,2025-2026 (fee + model change),M2,6,2.177,0.981,2.524,2.547,4/6
+revenue_passengers,2025-2026 (fee + model change),M2_oracle,6,3.008,1.128,3.612,3.759,3/6
+revenue_passengers,2025-2026 (fee + model change),T_BLEND,6,1.122,0.092,1.286,1.405,5/6
+revenue_passengers,2025-2026 (fee + model change),M3,6,1.738,-0.196,2.389,2.608,3/6
+revenue_passengers,2025-2026 (fee + model change),pax_B0,6,4.074,4.074,5.018,3.209,2/6
+revenue_passengers,2025-2026 (fee + model change),pax_B1,6,2.642,-0.281,2.851,3.108,0/6
+revenue_passengers,full sample 2022Q1-2026Q2,M1,18,3.038,1.328,4.255,4.159,16/18
+revenue_passengers,full sample 2022Q1-2026Q2,M2,18,6.031,3.975,8.683,7.944,11/18
+revenue_passengers,full sample 2022Q1-2026Q2,M2_oracle,18,5.078,3.198,7.268,6.715,12/18
+revenue_passengers,full sample 2022Q1-2026Q2,T_BLEND,18,3.586,2.255,5.585,5.258,14/18
+revenue_passengers,full sample 2022Q1-2026Q2,M3,14,2.26,0.154,2.882,2.986,9/14
+revenue_passengers,full sample 2022Q1-2026Q2,pax_B0,18,9.294,-5.973,13.81,12.812,7/18
+revenue_passengers,full sample 2022Q1-2026Q2,pax_B1,18,7.74,5.669,13.187,12.251,0/18
+average_fare,2022-2024 (pre fee change),P1,12,8.266,1.883,10.516,10.806,3/12
+average_fare,2022-2024 (pre fee change),P2,12,3.689,-1.678,4.89,4.797,8/12
+average_fare,2022-2024 (pre fee change),P3,12,5.744,-1.484,7.0,7.145,5/12
+average_fare,2022-2024 (pre fee change),P_BLEND_insample,12,4.434,-0.746,5.863,6.073,6/12
+average_fare,2022-2024 (pre fee change),P_BLEND_equal,12,4.496,-0.426,6.066,6.32,6/12
+average_fare,2022-2024 (pre fee change),P_BLEND_oos,12,4.305,-0.666,5.894,6.116,5/12
+average_fare,2022-2024 (pre fee change),M4,8,8.062,-0.911,12.871,13.725,3/8
+average_fare,2022-2024 (pre fee change),fare_B0,12,8.158,-7.672,11.501,8.948,5/12
+average_fare,2022-2024 (pre fee change),fare_B1,12,5.394,0.951,7.627,7.904,0/12
+average_fare,  of which 2022 (COVID base),P1,4,10.597,10.597,12.665,8.01,2/4
+average_fare,  of which 2022 (COVID base),P2,4,6.887,-2.109,7.626,8.462,2/4
+average_fare,  of which 2022 (COVID base),P3,4,7.745,1.383,9.02,10.293,3/4
+average_fare,  of which 2022 (COVID base),P_BLEND_insample,4,5.511,2.423,7.384,8.055,4/4
+average_fare,  of which 2022 (COVID base),P_BLEND_equal,4,5.402,3.29,7.476,7.752,3/4
+average_fare,  of which 2022 (COVID base),P_BLEND_oos,4,5.49,2.958,7.286,7.688,3/4
+average_fare,  of which 2022 (COVID base),fare_B0,4,17.429,-17.429,19.082,8.973,1/4
+average_fare,  of which 2022 (COVID base),fare_B1,4,9.406,2.274,11.66,13.205,0/4
+average_fare,  of which 2023-2024,P1,8,7.101,-2.474,9.256,9.535,1/8
+average_fare,  of which 2023-2024,P2,8,2.09,-1.463,2.606,2.306,6/8
+average_fare,  of which 2023-2024,P3,8,4.744,-2.917,5.728,5.27,2/8
+average_fare,  of which 2023-2024,P_BLEND_insample,8,3.896,-2.331,4.929,4.642,2/8
+average_fare,  of which 2023-2024,P_BLEND_equal,8,4.043,-2.284,5.22,5.018,3/8
+average_fare,  of which 2023-2024,P_BLEND_oos,8,3.713,-2.478,5.056,4.712,2/8
+average_fare,  of which 2023-2024,M4,8,8.062,-0.911,12.871,13.725,3/8
+average_fare,  of which 2023-2024,fare_B0,8,3.523,-2.794,4.04,3.12,4/8
+average_fare,  of which 2023-2024,fare_B1,8,3.389,0.289,4.389,4.682,0/8
+average_fare,2025-2026 (fee + model change),P1,6,6.695,0.444,7.579,8.288,2/6
+average_fare,2025-2026 (fee + model change),P2,6,4.412,-1.65,5.025,5.199,4/6
+average_fare,2025-2026 (fee + model change),P3,6,3.672,0.562,3.938,4.27,5/6
+average_fare,2025-2026 (fee + model change),P_BLEND_insample,6,4.302,-0.196,4.373,4.785,3/6
+average_fare,2025-2026 (fee + model change),P_BLEND_equal,6,4.459,-0.215,4.616,5.051,3/6
+average_fare,2025-2026 (fee + model change),P_BLEND_oos,6,4.416,-0.389,4.5,4.911,3/6
+average_fare,2025-2026 (fee + model change),M4,6,4.856,-4.007,5.537,4.185,3/6
+average_fare,2025-2026 (fee + model change),fare_B0,6,9.964,-9.964,11.551,6.401,1/6
+average_fare,2025-2026 (fee + model change),fare_B1,6,4.952,-2.467,5.523,5.413,0/6
+average_fare,full sample 2022Q1-2026Q2,P1,18,7.742,1.403,9.637,9.811,5/18
+average_fare,full sample 2022Q1-2026Q2,P2,18,3.93,-1.669,4.935,4.779,12/18
+average_fare,full sample 2022Q1-2026Q2,P3,18,5.054,-0.802,6.151,6.275,10/18
+average_fare,full sample 2022Q1-2026Q2,P_BLEND_insample,18,4.39,-0.563,5.412,5.538,9/18
+average_fare,full sample 2022Q1-2026Q2,P_BLEND_equal,18,4.484,-0.356,5.624,5.776,9/18
+average_fare,full sample 2022Q1-2026Q2,P_BLEND_oos,18,4.342,-0.573,5.469,5.596,8/18
+average_fare,full sample 2022Q1-2026Q2,M4,14,6.688,-2.238,10.383,10.522,6/14
+average_fare,full sample 2022Q1-2026Q2,fare_B0,18,8.76,-8.436,11.517,8.068,6/18
+average_fare,full sample 2022Q1-2026Q2,fare_B1,18,5.247,-0.189,6.996,7.196,0/18
+passenger_revenue,2022-2024 (pre fee change),REV_team,12,5.701,2.581,7.946,7.849,9/12
+passenger_revenue,2022-2024 (pre fee change),REV_M1xPoos,12,5.276,1.471,7.104,7.259,9/12
+passenger_revenue,2022-2024 (pre fee change),rev_B0,12,17.014,-17.014,23.776,17.347,4/12
+passenger_revenue,2022-2024 (pre fee change),rev_B1,12,10.891,9.384,16.348,13.982,0/12
+passenger_revenue,  of which 2022 (COVID base),REV_team,4,11.102,11.102,12.418,6.424,4/4
+passenger_revenue,  of which 2022 (COVID base),REV_M1xPoos,4,8.553,8.553,9.962,5.896,4/4
+passenger_revenue,  of which 2022 (COVID base),rev_B0,4,35.681,-35.681,39.037,18.285,1/4
+passenger_revenue,  of which 2022 (COVID base),rev_B1,4,23.163,23.163,26.383,14.585,0/4
+passenger_revenue,  of which 2023-2024,REV_team,8,3.001,-1.679,4.196,4.111,5/8
+passenger_revenue,  of which 2023-2024,REV_M1xPoos,8,3.638,-2.071,5.107,4.991,5/8
+passenger_revenue,  of which 2023-2024,rev_B0,8,7.68,-7.68,9.276,5.561,3/8
+passenger_revenue,  of which 2023-2024,rev_B1,8,4.755,2.495,7.271,7.301,0/8
+passenger_revenue,2025-2026 (fee + model change),REV_team,6,3.506,-0.338,3.698,4.034,4/6
+passenger_revenue,2025-2026 (fee + model change),REV_M1xPoos,6,3.139,-0.825,3.547,3.779,5/6
+passenger_revenue,2025-2026 (fee + model change),rev_B0,6,6.723,-6.295,9.133,7.249,2/6
+passenger_revenue,2025-2026 (fee + model change),rev_B1,6,3.855,-2.842,4.455,3.758,0/6
+passenger_revenue,full sample 2022Q1-2026Q2,REV_team,18,4.97,1.608,6.83,6.831,13/18
+passenger_revenue,full sample 2022Q1-2026Q2,REV_M1xPoos,18,4.564,0.705,6.151,6.288,14/18
+passenger_revenue,full sample 2022Q1-2026Q2,rev_B0,18,13.583,-13.441,20.117,15.401,6/18
+passenger_revenue,full sample 2022Q1-2026Q2,rev_B1,18,8.545,5.309,13.594,12.877,0/18

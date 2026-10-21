@@ -214,12 +214,78 @@ Hand-off from Traffic that matters here:
 
 ## Evaluation
 
-⬜ *Not started. Owner to complete.*
+**Deliverable: one backtest table by period, 2022Q1–2026Q2, covering both targets and the
+passenger-revenue product against B0 and B1.** Full method and code:
+[`Evaluation/README.md`](Evaluation/README.md).
 
-Traffic has already produced a vintage-correct backtest of its own method
-([`Traffic/outputs/backtest.csv`](Traffic/outputs/backtest.csv), by era in
-[`backtest_by_era.csv`](Traffic/outputs/backtest_by_era.csv)) covering 2022Q1–2026Q2 against
-both baselines, split at the 2025 fee change. Reuse or challenge it rather than rebuilding.
+Every method was **re-implemented from the roles' write-ups**, not copied. The re-implementation
+matches Traffic's committed backtest exactly and Price's to $0.0005. Both backtests reproduce, and
+both Q3 2026 forecasts reproduce.
+
+### The table (MAPE %)
+
+| Period | n | **Passengers: M1** | Traffic blend | B1 | **Fare: blend (OOS)** | P3 | B1 | **Product: team** | B1 |
+|---|---|---|---|---|---|---|---|---|---|
+| 2022–2024 (pre fee change) | 12 | **3.81** | 4.82 | 10.29 | **4.30** | 5.74 | 5.39 | **5.70** | 10.89 |
+| ‣ 2022 only (COVID base) | 4 | 6.38 | 8.20 | 21.56 | 5.49 | 7.74 | 9.41 | 11.10 | 23.16 |
+| ‣ 2023–2024 | 8 | **2.52** | 3.13 | 4.65 | 3.71 | 4.74 | **3.39** | **3.00** | 4.76 |
+| **2025–2026 (fee + model change)** | 6 | **1.50** | **1.12** | 2.64 | **4.42** | 3.67 | 4.95 | **3.51** | 3.86 |
+
+Fare scored against the ex-breakage Q2 2026 fare. "OOS" means the blend's weights use only errors
+from earlier quarters; Price's own blend is in-sample, and the difference is 0.12 points.
+
+### E1. Only the passenger half has a demonstrated edge over the naive forecast
+
+| DM test vs B1, 2025–2026, n=6 | M1 | Traffic blend | Price OOS blend | **Product** |
+|---|---|---|---|---|
+| Quarters beating B1 | 5/6 | 5/6 | 3/6 | 4/6 |
+| p-value (HLN-corrected) | 0.08 | **0.05** | 0.44 | **0.53** |
+
+The TSA chain beats B1 in 16 of 18 quarters and in every period. The fare does not reliably beat B1:
+in 2023–2024 B1 wins outright, and the "2022–2024" aggregate is flattered by 2022's COVID bases. So
+the **revenue product, the client's number, has no statistically distinguishable edge over
+"last year × last quarter's YoY"**.
+
+### E2. On a fair basis, the fare forecast *is* the naive forecast
+
+The packet's B1 fare ($220.67) is built on the reported Q2 fare, which carries the $285M one-off.
+Ex-breakage, B1 = **$228.78**. The team's $229.34 is **0.24%** above it. Scoring against the packet's
+B1 would credit the model with a 4% edge that comes entirely from the breakage adjustment.
+
+### E3. The two 80% intervals are miscalibrated in opposite directions
+
+| | Delivered | Covers, 14 post-COVID quarters | Why |
+|---|---|---|---|
+| Passengers | ±2.05% | **50%** | Sized on the current era's six quarters, which are M1's calmest window on record |
+| Fare | ±7.16% | **93%** | "Student-t, 5 df" implemented with the sd as the t's scale, 29% wider than Traffic's convention |
+
+**Recommended harmonised rule:** error sd over 2023Q1–2026Q2 (n=14), Student-t rescaled to that sd.
+Passengers **31,912 – 33,912** (±3.0%); fare **$215.87 – $242.82** (±5.9%).
+
+### E4. Passenger and fare errors are negatively correlated, so the product is tighter than the halves
+
+ρ = **−0.38** over 2023Q1–2026Q2 and **−0.76** in the current era. The cause is mechanical. The fare
+is revenue ÷ passengers, and the fare methods never see the count, so a passenger shortfall shows up
+as a fare overshoot. Independence would put the product's sd at 5.3%; the realised sd is 4.0%.
+**Integration should combine with ρ ≈ −0.4, not 0.** Traffic's own M1/M2 ρ = 0.7 is conservative:
+the realised correlation is about zero since 2025.
+
+### E5. Two flags on the Q3 2026 passenger point, both pointing down
+
+- **The naive regression disagrees by 2.1%.** M3, refitted each quarter, scores within 0.24 points
+  of M1 out of sample, and for Q3 it says **32,097k**. It has under-forecast three of the last four
+  quarters (it cannot see the share flip), so we read it as biased low, but the gap is bigger than
+  either method's typical error.
+- **July's T-100 capacity is −1.84% YoY, below the guided −1% to flat.** At the July run-rate, M2
+  gives 32,718k instead of 33,171k, and the blend moves to ~32,753k (−0.5%).
+
+### E6. PoV — Flag, and specific about what is sold
+
+Sell the **passenger nowcast**: it has the evidence behind it. Sell the **fare attribution**
+(Price §8) as explanation. Do **not** sell the revenue point as beating a naive model, because six
+quarters cannot show that it does. Downgrade triggers beyond Traffic's and Price's:
+(1) M1 loses to B1 two quarters running; (2) the product misses its harmonised interval twice in
+four quarters; (3) M1 and M3 diverge by more than 2%, which is **already raised for Q3**.
 
 ---
 
