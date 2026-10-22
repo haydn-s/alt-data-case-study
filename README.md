@@ -68,13 +68,13 @@ assigned seating from Jan 2026), a fuel shock, and two federal funding lapses.
 ├── Integration/                Integration role (complete)
 │   ├── README.md               combination, guidance check, market benchmark, form
 │   ├── integrate.py            form values, product interval, guidance check, post-print scorecard
-│   ├── actuals.json            reported Q3 figures: null until the print
+│   ├── actuals.json            reported Q3 figures, from the Oct 21 release
 │   ├── slides/                 the pre-print readout, frozen as the record of what we registered
 │   └── outputs/                form, guidance check, sensitivity, summary JSON, run log
 └── Presentation/               the deck uploaded for the Oct 28 readout (due Oct 27)
-    ├── README.md               slide-by-requirement map, placeholder list, steps after the print
+    ├── README.md               slide-by-requirement map and the result against the print
     ├── build_presentation.py   generates the deck from the pipeline outputs
-    ├── deck_inputs.json        team name and the one-sentence "why" (null until filled)
+    ├── deck_inputs.json        team name and the PoV line on slide 5
     └── southwest_q3_2026_presentation.pptx
 ```
 
@@ -106,7 +106,7 @@ python3 -m venv .venv && .venv/bin/pip install pandas numpy matplotlib statsmode
 Each prints its full analysis log and refreshes its own `outputs/`. The runs are deterministic
 (seeded Monte Carlo), so the committed outputs should reproduce exactly. Evaluation reads the two
 roles' committed `forecast.csv` and `backtest.csv`, and Integration reads Evaluation's outputs,
-so run them in this order. After the print, fill `Integration/actuals.json` and re-run the last two.
+so run them in this order. The deck needs `Integration/actuals.json` filled, which it now is.
 
 ## Key dates
 

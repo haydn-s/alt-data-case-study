@@ -86,5 +86,14 @@ market may be under-pricing.
 ==============================================================================
 7. SCORECARD AGAINST THE PRINT
 ==============================================================================
-actuals.json has no reported figures yet (Southwest reports Oct 21 after the close).
-Fill it from the Q3 2026 release and re-run this script and Presentation/build_presentation.py.
+                   target   actual     team  team_err_pct  in_80  B0_err_pct  B1_packet_err_pct  B1_exbreakage_err_pct  kalshi_err_pct
+revenue passengers (000s) 33467.00 32912.00         -1.66   True        3.33              -0.09                  -0.09             NaN
+         average fare ($)   231.69   229.34         -1.01   True      -21.21              -4.76                  -1.26           -0.85
+   passenger revenue ($M)  7754.00  7548.04         -2.66   True      -18.58              -4.85                  -1.35             NaN
+
+Passenger revenue vs the guidance bands: packet, 92% share: above, seasonal, 91.48% share: above
+
+Passenger miss decomposed (log %): total -1.67 = boardings -0.47 (TSA/T-100 chain) + trip factor -1.21 (the accounting bridge)
+  enplaned forecast 43,108k vs actual 43,310k; trip factor 1.3098 vs actual 1.2941
+
+Product log error -2.69% = passengers -1.67 + fare -1.02 + revenue/(pax x fare) gap -0.00

@@ -151,28 +151,19 @@ the field is left blank. If the team wants to fill it anyway, the honest entry i
 
 ## 7. The slides
 
-**The deck now lives in [`../Presentation/`](../Presentation/README.md)**: generator, placeholders and
-the post-print steps are documented there. What stays here is
+**The deck now lives in [`../Presentation/`](../Presentation/README.md)**: the generator, the
+slide-by-topic map and the result against the print are documented there. What stays here is
 [`slides/southwest_q3_2026_readout.pptx`](slides/southwest_q3_2026_readout.pptx), **frozen** as the
 pre-print record. It is the deck that went with the form, and its slide 5 lists the four risks we
 registered before the print. It is no longer regenerated; to rebuild it, run `build_deck.py` from
 commit `6c65ca3`.
 
-The five slides, the packet's maximum, one per required topic:
-
-| # | Packet topic | Slide title | Message |
-|---|---|---|---|
-| 1 | Forecast against actual | Fewer passengers, a much higher fare | The three numbers with intervals, the actuals, and four benchmarks |
-| 2 | Data and cleaning decisions | TSA counts boardings, not passengers | Q2: enplaned +0.3% vs revenue passengers −3.3%; one cleaning decision per source |
-| 3 | Model and baselines | The split says yield, not volume | Method in three steps; both baselines miss the guidance band |
-| 4 | Backtest by period | Passengers beat naive; fares don't yet | 2023–24 vs 2025–26 MAPE against B1, with DM p-values |
-| 5 | What we got wrong and why | What would make us wrong (frozen) / What we got wrong, and why (presentation) | Scorecard, the four pre-registered risks and what each became, PoV with each downgrade trigger's status |
-
-**After the print (Oct 21, after the close):** fill [`actuals.json`](actuals.json) from the Q3 2026
-release, then re-run `integrate.py` and `Presentation/build_presentation.py`. **Enplaned passengers**
-is the field that matters most: it lets the scorecard split the passenger miss into a boardings error
-(the TSA chain) and a trip-factor error (the accounting bridge). The form numbers never read
-`actuals.json`, so this cannot move the locked forecast.
+**The print is in.** [`actuals.json`](actuals.json) carries the Q3 2026 release figures (SEC 8-K,
+Oct 21), and `integrate.py` writes the scorecard to `outputs/scorecard.csv`. All three actuals landed
+inside the 80% intervals, and all three forecasts were low: passengers 1.7%, fare 1.0%, revenue 2.7%.
+**Enplaned passengers** splits the passenger miss into a boardings error (the TSA chain, 0.5% low) and
+a trip-factor error (the accounting bridge, 1.2% low). The form numbers never read `actuals.json`, so
+filling it in did not move the locked forecast.
 The decomposition is exact in logs: `log(F/A) = log(enplaned F/A) − log(trip factor F/A)`.
 
 ---
@@ -196,7 +187,7 @@ The decomposition is exact in logs: `log(F/A) = log(enplaned F/A) − log(trip f
 | File | Contents |
 |---|---|
 | [`integrate.py`](integrate.py) | Combination, product interval, guidance check, split, Kalshi benchmark, form and post-print scorecard |
-| [`actuals.json`](actuals.json) | The reported Q3 figures: **null until the print** |
+| [`actuals.json`](actuals.json) | The reported Q3 figures, from the Oct 21 release |
 | [`slides/southwest_q3_2026_readout.pptx`](slides/southwest_q3_2026_readout.pptx) | The pre-print readout, **frozen** as the record of what we registered before the print |
 | [`outputs/form.md`](outputs/form.md) | The values to enter on the forecast form |
 | [`outputs/integration_summary.json`](outputs/integration_summary.json) | Every number the deck uses |

@@ -1,0 +1,4 @@
+target,actual,team,team_err_pct,in_80,B0_err_pct,B1_packet_err_pct,B1_exbreakage_err_pct,kalshi_err_pct
+revenue passengers (000s),33467.0,32912.0,-1.658,True,3.329,-0.094,-0.094,
+average fare ($),231.69,229.34,-1.014,True,-21.205,-4.756,-1.256,-0.853
+passenger revenue ($M),7754.0,7548.038,-2.656,True,-18.584,-4.849,-1.347,
