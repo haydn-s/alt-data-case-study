@@ -310,7 +310,7 @@ four quarters; (3) M1 and M3 diverge by more than 2%, which is **already raised 
 ## Integration
 
 **Deliverable: the form values (top of this document), the guidance check, and the five-slide deck
-[`Integration/slides/southwest_q3_2026_readout.pptx`](Integration/slides/southwest_q3_2026_readout.pptx).**
+[`Presentation/southwest_q3_2026_presentation.pptx`](Presentation/southwest_q3_2026_presentation.pptx).**
 Full method and code: [`Integration/README.md`](Integration/README.md).
 
 ### I1. The product is $7,548M and sits inside the guided band — on either share assumption
@@ -349,7 +349,25 @@ $215.87–242.81. Benchmark only; it does not enter the forecast.
 
 - **Share price (optional): left blank.** With no demonstrated edge on revenue we have no informed view
   on the reaction. Random-walk would be the honest entry.
-- **After the print:** fill `Integration/actuals.json` (including **enplaned passengers**) and re-run
-  `integrate.py` and `build_deck.py`. Slide 5 then becomes the scorecard, with the passenger miss split
-  exactly into a boardings error and a trip-factor error. That split is the test of F1/F2: whether the
-  alternative data or the accounting bridge failed.
+- **After the print:** `Integration/actuals.json` now carries the Q3 release; see I6.
+
+### I6. Against the print: inside every band, a little low, and the bridge missed
+
+| | Forecast | Actual | Error | In 80%? | B1 error |
+|---|---|---|---|---|---|
+| Revenue passengers | 32,912k | 33,467k | 1.7% low | ✓ | 0.1% low |
+| Average fare | $229.34 | $231.69 | 1.0% low | ✓ | 4.8% low (1.3% ex-breakage) |
+| Passenger revenue | $7,548M | $7,754M | 2.7% low | ✓ | 4.8% low |
+
+- **The test of F1/F2 came out the Flag way.** The passenger miss splits into boardings 0.5% low (the
+  TSA and T-100 chain) and trip factor 1.2% low (the bridge). The trip factor rose 2.2% YoY, not the
+  3.4% we extrapolated: 1.2941 against our 1.3098, slightly below Q2's 1.2967.
+- **Southwest beat its own guide.** Unit revenue rose 21.6% against +17.5–19.5%, so passenger revenue
+  landed above the guided band that our forecast sat inside.
+- **B1 beat our passenger count** this quarter; we beat it on fare. Kalshi's fare median ($229.71) was
+  a touch closer than our $229.34.
+- **Downgrade triggers.** The trip factor was 1.2% off forecast, inside Traffic's 1.5-point trigger.
+  But Evaluation's trigger (1) **has fired**: B1 also beat our passenger method in Q2 2026 (0.6% high
+  against the blend's 0.9% low, and M1's 1.6% low), so it has now lost to naive two quarters running.
+  For the Q4 decision exercise: keep selling the boardings nowcast, and downgrade the revenue-passenger
+  number to boardings-only until the trip factor is re-estimated.

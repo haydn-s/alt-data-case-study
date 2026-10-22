@@ -3,8 +3,8 @@
 **Built only from the team's committed outputs and the public files in `../data/`. Nothing dated
 after Oct 21 2026 enters the forecast.**
 
-Reproduce with `python Integration/integrate.py`, then `python Integration/build_deck.py` (needs
-`python-pptx` on top of the other roles' packages). Full printed log:
+Reproduce with `python Integration/integrate.py`. The slide deck is built from these outputs by
+`python Presentation/build_presentation.py` (needs `python-pptx`); see [`../Presentation/`](../Presentation/README.md). Full printed log:
 [`outputs/run_log.txt`](outputs/run_log.txt).
 
 ---
@@ -98,7 +98,7 @@ the optimistic side of management's range.
 ## 4. What the split tells you that the band does not
 
 The packet asks this question directly. Plot passengers against fare and the guidance band becomes a
-thin curved strip ([slide 3](slides/southwest_q3_2026_readout.pptx)):
+thin curved strip ([slide 3](../Presentation/southwest_q3_2026_presentation.pptx)):
 
 | Point | Passengers | Fare | Revenue | vs seasonal band |
 |---|---|---|---|---|
@@ -151,28 +151,19 @@ the field is left blank. If the team wants to fill it anyway, the honest entry i
 
 ## 7. The slides
 
-[`slides/southwest_q3_2026_readout.pptx`](slides/southwest_q3_2026_readout.pptx): five slides, the
-packet's maximum, one per required topic. Every number is read from the pipeline's outputs. Speaker
-notes carry the narration.
+**The deck now lives in [`../Presentation/`](../Presentation/README.md)**: the generator, the
+slide-by-topic map and the result against the print are documented there. What stays here is
+[`slides/southwest_q3_2026_readout.pptx`](slides/southwest_q3_2026_readout.pptx), **frozen** as the
+pre-print record. It is the deck that went with the form, and its slide 5 lists the four risks we
+registered before the print. It is no longer regenerated; to rebuild it, run `build_deck.py` from
+commit `6c65ca3`.
 
-| # | Packet topic | Slide title | Message |
-|---|---|---|---|
-| 1 | Forecast against actual | Fewer passengers, a much higher fare | The three numbers with intervals, the actuals, and four benchmarks |
-| 2 | Data and cleaning decisions | TSA counts boardings, not passengers | Q2: enplaned +0.3% vs revenue passengers −3.3%; one cleaning decision per source |
-| 3 | Model and baselines | The split says yield, not volume | Method in three steps; both baselines miss the guidance band |
-| 4 | Backtest by period | Passengers beat naive; fares don't yet | 2023–24 vs 2025–26 MAPE against B1, with DM p-values |
-| 5 | What we got wrong and why | What would make us wrong → What we got wrong, and why | Four risks registered before the print; PoV and downgrade triggers |
-
-**After the print (Oct 21, after the close):**
-
-1. Fill [`actuals.json`](actuals.json) from the Q3 2026 release: revenue passengers, average fare, and
-   **enplaned passengers**. The last one lets the scorecard split the passenger miss into a boardings
-   error (the TSA chain) and a trip-factor error (the accounting bridge).
-2. Re-run `integrate.py` and then `build_deck.py`.
-
-Slide 1 then shows each actual with its error and whether it fell inside the 80% band. Slide 5 becomes
-a scorecard: forecast vs actual vs B1, the passenger miss decomposed, and the pre-registered risks to
-attribute it to. The form numbers never read `actuals.json`, so this cannot move the locked forecast.
+**The print is in.** [`actuals.json`](actuals.json) carries the Q3 2026 release figures (SEC 8-K,
+Oct 21), and `integrate.py` writes the scorecard to `outputs/scorecard.csv`. All three actuals landed
+inside the 80% intervals, and all three forecasts were low: passengers 1.7%, fare 1.0%, revenue 2.7%.
+**Enplaned passengers** splits the passenger miss into a boardings error (the TSA chain, 0.5% low) and
+a trip-factor error (the accounting bridge, 1.2% low). The form numbers never read `actuals.json`, so
+filling it in did not move the locked forecast.
 The decomposition is exact in logs: `log(F/A) = log(enplaned F/A) − log(trip factor F/A)`.
 
 ---
@@ -196,9 +187,8 @@ The decomposition is exact in logs: `log(F/A) = log(enplaned F/A) − log(trip f
 | File | Contents |
 |---|---|
 | [`integrate.py`](integrate.py) | Combination, product interval, guidance check, split, Kalshi benchmark, form and post-print scorecard |
-| [`build_deck.py`](build_deck.py) | Generates the five-slide deck from the outputs below |
-| [`actuals.json`](actuals.json) | The reported Q3 figures: **null until the print** |
-| [`slides/southwest_q3_2026_readout.pptx`](slides/southwest_q3_2026_readout.pptx) | The readout deck (pre-print version until actuals are filled) |
+| [`actuals.json`](actuals.json) | The reported Q3 figures, from the Oct 21 release |
+| [`slides/southwest_q3_2026_readout.pptx`](slides/southwest_q3_2026_readout.pptx) | The pre-print readout, **frozen** as the record of what we registered before the print |
 | [`outputs/form.md`](outputs/form.md) | The values to enter on the forecast form |
 | [`outputs/integration_summary.json`](outputs/integration_summary.json) | Every number the deck uses |
 | [`outputs/guidance_check.csv`](outputs/guidance_check.csv) | Both guidance bands, position, probability inside, implied fare and passengers |
