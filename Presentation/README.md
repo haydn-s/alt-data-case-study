@@ -48,7 +48,7 @@ decisions, model and baselines, backtest by period, and what we got wrong and wh
 
 | Key | Where it shows | Now |
 |---|---|---|
-| `team_name` | Slide 1 subtitle, as "Team …" | **null: add it before uploading** |
+| `team_name` | Slide 1 subtitle, as "Team …" | "Thurro EV" |
 | `why` | The PoV bar at the foot of slide 5 | A draft: "Team Flag. Keep selling the boardings nowcast; downgrade the passenger count until the trip factor settles." |
 
 Edit either, then re-run the build.
