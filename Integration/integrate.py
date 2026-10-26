@@ -15,7 +15,7 @@ The form numbers never read actuals.json, so filling it in after the print
 cannot move the locked forecast. It only switches on the scorecard (section 7).
 
 Run:  python Integration/integrate.py
-Then: python Integration/build_deck.py   (reads this script's outputs)
+Then: python Presentation/build_presentation.py   (reads this script's outputs)
 """
 from pathlib import Path
 import json
@@ -277,7 +277,7 @@ score = pd.DataFrame()
 decomp = {}
 if not have:
     say("actuals.json has no reported figures yet (Southwest reports Oct 21 after the close).")
-    say("Fill it from the Q3 2026 release and re-run this script and build_deck.py.")
+    say("Fill it from the Q3 2026 release and re-run this script and Presentation/build_presentation.py.")
 else:
     a_pax, a_fare = float(act["revenue_passengers_000"]), float(act["avg_passenger_fare_usd"])
     a_rev = act.get("passenger_revenue_musd") or a_pax * a_fare / 1000
@@ -326,7 +326,7 @@ else:
 
 
 # =============================================================================
-# 8. SAVE -- everything build_deck.py needs
+# 8. SAVE -- everything Presentation/build_presentation.py needs
 # =============================================================================
 summary = {
     "form": form,
@@ -340,6 +340,7 @@ summary = {
              "P1": float(pf["P1"]), "P2": float(pf["P2"]), "P3": float(pf["P3"])},
     "revenue": {"point": rev_pt, "lo80": rev_lo, "hi80": rev_hi, "rho": RHO},
     "guidance": {"oprev_lo": oprev_band[0], "oprev_hi": oprev_band[1],
+                 "rasm_yoy_pct": list(RASM_GUIDE_PCT), "asm_yoy_pct": list(ASM_GUIDE_PCT),
                  "share_seasonal": share_seasonal,
                  "band_92_lo": flat_lo, "band_92_hi": flat_hi,
                  "band_seasonal_lo": seas_lo, "band_seasonal_hi": seas_hi,

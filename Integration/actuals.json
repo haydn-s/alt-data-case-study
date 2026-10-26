@@ -1,8 +1,10 @@
 {
-  "_source": "Southwest Q3 2026 earnings release, Oct 21 2026 after the close. Fill in after the print, then re-run integrate.py and build_deck.py. Leave null until then.",
-  "revenue_passengers_000": null,
-  "avg_passenger_fare_usd": null,
-  "enplaned_passengers_000": null,
-  "passenger_revenue_musd": null,
-  "operating_revenue_musd": null
+  "_source": "Southwest Q3 2026 earnings release, Oct 21 2026 after the close (SEC 8-K exhibit 99.1: https://www.sec.gov/Archives/edgar/data/0000092380/000009238026000104/er-9302026xerdoc.htm). Entered Oct 22 2026, after the form closed; the form values never read this file.",
+  "revenue_passengers_000": 33467,
+  "avg_passenger_fare_usd": 231.69,
+  "enplaned_passengers_000": 43310,
+  "passenger_revenue_musd": 7754,
+  "operating_revenue_musd": 8422,
+  "asm_millions": 45393,
+  "special_items_musd": 0
 }

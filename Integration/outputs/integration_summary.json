@@ -51,6 +51,14 @@
   "guidance": {
     "oprev_lo": 8083.386444375001,
     "oprev_hi": 8304.0161625,
+    "rasm_yoy_pct": [
+      17.5,
+      19.5
+    ],
+    "asm_yoy_pct": [
+      -1.0,
+      0.0
+    ],
     "share_seasonal": 0.9147942959938093,
     "band_92_lo": 7436.7155288250015,
     "band_92_hi": 7639.6948695,
@@ -105,6 +113,23 @@
     "lo80": 221.8067673882403,
     "hi80": 237.62127023013483
   },
-  "actuals": null,
-  "decomposition": null
+  "actuals": {
+    "_source": "Southwest Q3 2026 earnings release, Oct 21 2026 after the close (SEC 8-K exhibit 99.1: https://www.sec.gov/Archives/edgar/data/0000092380/000009238026000104/er-9302026xerdoc.htm). Entered Oct 22 2026, after the form closed; the form values never read this file.",
+    "revenue_passengers_000": 33467,
+    "avg_passenger_fare_usd": 231.69,
+    "enplaned_passengers_000": 43310,
+    "passenger_revenue_musd": 7754,
+    "operating_revenue_musd": 8422,
+    "asm_millions": 45393,
+    "special_items_musd": 0
+  },
+  "decomposition": {
+    "enplaned_forecast": 43108.1376,
+    "enplaned_actual": 43310.0,
+    "trip_factor_forecast": 1.3098,
+    "trip_factor_actual": 1.2941106164281233,
+    "total_log_err_pct": -1.6722545788678231,
+    "boardings_log_err_pct": -0.46717685141177673,
+    "trip_factor_log_err_pct": -1.2050777274560425
+  }
 }
